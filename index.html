@@ -1,565 +1,485 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chavez Management Group</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Allura&family=Montserrat:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Burlingame Medical Center — Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- ============================================================= -->
+<!--  BURLINGAME MEDICAL CENTER DIGITAL DIRECTORY  (portrait)        -->
+<!--  Managed by Chavez Management Group, Inc.                       -->
+<!--                                                                 -->
+<!--  UPDATE TENANTS PERMANENTLY (every screen):                     -->
+<!--    Edit PUBLISHED_DIRECTORY below, commit to GitHub. The board  -->
+<!--    reloads itself periodically and picks up the change.         -->
+<!--  QUICK UPDATE ON ONE SCREEN:                                    -->
+<!--    Move the mouse, click the gear (bottom-right), edit, Save.   -->
+<!--                                                                 -->
+<!--  The tenant list auto-scales so nothing is ever cut off.        -->
+<!-- ============================================================= -->
+
 <style>
   :root{
-    --navy:       #1e3a5f;
-    --navy-deep:  #14283f;
-    --navy-edge:  #0d1c2e;
-    --ink:        #ffffff;
-    --muted:      rgba(255,255,255,.62);
-    --soft:       rgba(255,255,255,.85);
-    --gold:       #b8a05c;
-    --rule:       rgba(255,255,255,.20);
-    --shadow:     0 2px 40px rgba(0,0,0,.5);
+    --bg0:#0B1626; --bg1:#15273F; --bg2:#0A1320;
+    --surface:rgba(255,255,255,.045);
+    --surface-2:rgba(255,255,255,.075);
+    --border:rgba(255,255,255,.10);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#EBF1F8;
+    --muted:#93A6BC;
+    --faint:#6E809A;
+    --gold:#C9A24C;
+    --slate:#7FA0C2;
+    --sage:#92B4A0;
   }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+
   body{
-    background: var(--navy-edge);
-    color: var(--ink);
-    font-family:"Montserrat", sans-serif;
-    overflow:hidden;
+    background:
+      radial-gradient(120% 65% at 50% -8%, rgba(201,162,76,.16), transparent 60%),
+      linear-gradient(168deg, var(--bg1) 0%, var(--bg0) 46%, var(--bg2) 100%);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:"Inter", system-ui, sans-serif;
     -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    user-select:none;
+    cursor:none;
   }
+  body.show-cursor{ cursor:default; }
 
-  /* ---- two-column split ---- */
-  .content{
+  .stage{
+    height:100vh; width:100vw;
     display:grid;
-    grid-template-columns: 42fr 58fr;
-    height:100%;
+    grid-template-rows:auto auto 1fr auto;
+    gap:clamp(14px,1.6vh,30px);
+    padding:clamp(26px,3.4vh,60px) clamp(26px,4vw,64px) clamp(20px,2.4vh,40px);
   }
 
-  /* ---- left: photo panel ---- */
-  .photo-panel{ position:relative; overflow:hidden; background: var(--navy-deep); }
-  .photo-panel img,
-  .photo-panel video{
-    position:absolute; inset:0;
-    width:100%; height:100%; object-fit:cover; object-position:center;
+  /* ---------- HEADER ---------- */
+  header{ text-align:center; }
+  .eyebrow{
+    font-family:"Jost",sans-serif; font-weight:400;
+    letter-spacing:.6em; text-indent:.6em; text-transform:uppercase;
+    font-size:clamp(12px,1.7vw,22px); color:var(--gold);
   }
-  #bgVideo{ display:none; }
-  /* Subtle navy wash on the photo + bottom gradient for caption legibility */
-  .photo-panel::after{
-    content:""; position:absolute; inset:0;
-    background:
-      linear-gradient(0deg, rgba(13,28,46,.95) 0%, rgba(13,28,46,0) 38%),
-      linear-gradient(180deg, rgba(13,28,46,.55) 0%, rgba(13,28,46,0) 22%),
-      linear-gradient(0deg, rgba(30,58,95,.18), rgba(30,58,95,.18));
-    pointer-events:none;
+  .title{
+    font-family:"Jost",sans-serif; font-weight:300;
+    text-transform:uppercase; line-height:.95; margin:.2em 0 0; color:#fff;
   }
-  /* Vertical gold accent on the inner edge */
-  .photo-panel::before{
-    content:""; position:absolute; top:0; bottom:0; right:0;
-    width:2px; background: var(--gold);
-    z-index:2;
+  .title .l1{ display:block; font-size:clamp(40px,8.4vw,104px); letter-spacing:.16em; text-indent:.16em; }
+  .title .l2{ display:block; font-size:clamp(20px,4.3vw,54px); letter-spacing:.34em; text-indent:.34em; margin-top:.1em; color:#D9E2EC; }
+  .rule{
+    width:clamp(150px,30vw,360px); height:1.5px; margin:clamp(12px,1.6vh,22px) auto clamp(9px,1.1vh,15px);
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
   }
-  .photo-caption{
-    position:absolute; z-index:3;
-    left:0; right:0; bottom:0;
-    padding: clamp(28px, 3vw, 56px);
-    animation: rise 1s cubic-bezier(.2,.75,.2,1) both .35s;
-  }
-  .pc-label{
-    display:block;
-    font-size: clamp(10px,.95vw,14px);
-    text-transform:uppercase; letter-spacing:.55em;
-    color: var(--gold);
-    font-weight:500;
-    margin-bottom: .9em;
-  }
-  .pc-addr{
-    display:block;
-    font-size: clamp(20px, 1.85vw, 32px);
-    line-height: 1.25;
-    letter-spacing:.04em;
-    color: var(--ink);
-    font-weight: 300;
+  .address{
+    font-family:"Jost",sans-serif; font-weight:400;
+    color:var(--muted); font-size:clamp(15px,2.1vw,28px); letter-spacing:.05em;
   }
 
-  /* ---- right: info panel ---- */
-  .info-panel{
-    background:
-      radial-gradient(120% 100% at 80% 0%, rgba(30,58,95,.85), rgba(20,40,63,1) 55%, var(--navy-deep) 100%);
-    padding: clamp(32px, 3.6vw, 64px);
-    display:flex; flex-direction:column;
-    gap: clamp(20px, 2.6vw, 44px);
-    position:relative;
-  }
-  .info-panel > *{ animation: rise 1s cubic-bezier(.2,.75,.2,1) both; }
-  .info-header { animation-delay:.05s; }
-  .info-middle { animation-delay:.18s; }
-  .info-footer { animation-delay:.30s; }
-  @keyframes rise{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:none;} }
-
-  /* header inside info panel */
-  .info-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:24px; }
-  .logo{ display:flex; align-items:center; gap: clamp(14px, 1.2vw, 20px); }
-  .logo-mark{
-    width: clamp(48px, 4vw, 70px);
-    aspect-ratio:1/1;
-    border:1.5px solid var(--ink);
-    flex:none;
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .logo-c{
-    font-family:"Allura", cursive;
-    font-size: clamp(64px, 5.6vw, 96px);
-    line-height:0;
-    color: var(--ink);
-    pointer-events:none;
-  }
-  .wordmark{ display:flex; flex-direction:column; line-height:1; }
-  .wm-main{
-    font-weight:400;
-    font-size: clamp(16px, 1.5vw, 26px);
-    letter-spacing:.32em;
-    text-transform:uppercase;
-  }
-  .wm-sub{
-    margin-top:.55em;
-    font-weight:500;
-    font-size: clamp(8px,.72vw,11px);
-    letter-spacing:.26em;
-    color: var(--soft);
-    text-transform:uppercase;
-  }
-  .header-right{ display:flex; flex-direction:column; align-items:flex-end; gap:.7em; }
-  .date{
-    font-size: clamp(11px,1vw,15px);
-    text-transform:uppercase; letter-spacing:.32em;
-    color: var(--soft);
-  }
+  /* ---------- LIVE CARD ---------- */
   .live{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:clamp(16px,2vh,30px) clamp(20px,3vw,44px);
+    backdrop-filter:blur(8px);
+    text-align:center;
+  }
+  .clock .time{
+    font-family:"Jost",sans-serif; font-weight:300;
+    font-size:clamp(48px,11vw,128px); line-height:1; color:#fff;
+    letter-spacing:.01em; font-variant-numeric:tabular-nums;
+    text-shadow:0 0 38px rgba(201,162,76,.22);
+  }
+  .clock .time .ampm{ font-size:.3em; color:var(--gold); letter-spacing:.14em; margin-left:.3em; font-weight:400; }
+  .clock .cdate{ margin-top:.35em; font-size:clamp(14px,2vw,24px); color:var(--muted); letter-spacing:.03em; }
+  .clock .cdate b{ color:var(--text); font-weight:600; }
+
+  .live-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:18px; margin-top:clamp(14px,1.8vh,24px);
+    padding-top:clamp(14px,1.8vh,22px);
+    border-top:1px solid var(--border);
+  }
+  .weather{ display:flex; align-items:center; gap:clamp(8px,1vw,16px); }
+  .weather svg{ width:clamp(34px,4vw,56px); height:clamp(34px,4vw,56px); flex:none; }
+  .wx-temp{ font-family:"Jost",sans-serif; font-weight:400; font-size:clamp(26px,3.4vw,46px); color:#fff; line-height:1; }
+  .wx-meta{ text-align:left; font-size:clamp(12px,1.5vw,18px); color:var(--muted); line-height:1.25; }
+  .wx-meta b{ color:var(--text); font-weight:600; }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:.6em; white-space:nowrap;
+    font-size:clamp(12px,1.5vw,18px); font-weight:600; letter-spacing:.02em;
+    color:var(--muted); background:rgba(255,255,255,.05);
+    border:1px solid var(--border); padding:.6em 1.15em; border-radius:999px;
+  }
+  .dot{ width:.66em; height:.66em; border-radius:50%; background:#7d8aa0; }
+  .status-pill.open{ color:#bfe6cf; } .status-pill.open .dot{ background:#54c98a; box-shadow:0 0 0 4px rgba(84,201,138,.18); }
+  .status-pill.closed .dot{ background:#d08a73; }
+
+  /* ---------- DIRECTORY ---------- */
+  .dir-area{ position:relative; overflow:hidden; display:flex; justify-content:center; }
+  .directory{
+    width:100%;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:clamp(14px,1.6vw,26px) clamp(16px,1.8vw,28px);
+    align-content:start;
+    transform-origin:top center;
+  }
+  .section{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px; overflow:hidden;
+    backdrop-filter:blur(6px);
+  }
+  .section-head{
     display:flex; align-items:center; gap:.7em;
-    font-size: clamp(9px,.78vw,12px);
-    text-transform:uppercase; letter-spacing:.35em;
-    color: var(--muted);
+    font-family:"Jost",sans-serif; font-weight:500;
+    letter-spacing:.16em; text-indent:.04em; text-transform:uppercase;
+    font-size:clamp(13px,1.55vw,20px); color:var(--text);
+    padding:clamp(11px,1.5vh,17px) clamp(15px,1.4vw,22px);
+    border-bottom:1px solid var(--border);
   }
-  .dot{
-    width:.62em; height:.62em; border-radius:50%; background: var(--gold);
-    animation:pulse 2.6s infinite;
+  .section-head::before{
+    content:""; width:.5em; height:1.25em; border-radius:3px; flex:none;
+    background:var(--accent, var(--gold)); box-shadow:0 0 14px var(--glow, rgba(201,162,76,.5));
   }
-  @keyframes pulse{
-    0%{ box-shadow:0 0 0 0 rgba(184,160,92,.55); }
-    70%{ box-shadow:0 0 0 13px rgba(184,160,92,0); }
-    100%{ box-shadow:0 0 0 0 rgba(184,160,92,0); }
+  .section.navy{  --accent:var(--gold);  --glow:rgba(201,162,76,.5); }
+  .section.slate{ --accent:var(--slate); --glow:rgba(127,160,194,.5); }
+  .section.sage{  --accent:var(--sage);  --glow:rgba(146,180,160,.5); }
+
+  .entry{
+    display:flex; align-items:center; gap:clamp(10px,1vw,18px);
+    padding:clamp(9px,1.25vh,15px) clamp(15px,1.4vw,22px);
+    border-top:1px solid rgba(255,255,255,.055);
+  }
+  .entry:first-of-type{ border-top:none; }
+  .entry .name{ flex:1; font-size:clamp(13px,1.45vw,19px); line-height:1.3; color:#E2EAF3; font-weight:500; }
+  .entry .suite{
+    font-family:"Jost",sans-serif; font-weight:600;
+    font-size:clamp(17px,1.95vw,28px); color:#fff; letter-spacing:.01em; white-space:nowrap;
+    min-width:1.6em; text-align:right;
+  }
+  .section.navy  .entry .suite{ color:var(--gold); }
+  .section.slate .entry .suite{ color:#A9C4E0; }
+  .section.sage  .entry .suite{ color:#B6D3C2; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    padding-top:clamp(12px,1.6vh,20px);
+    border-top:1px solid var(--border);
+  }
+  .foot-tag{ font-family:"Jost",sans-serif; letter-spacing:.06em; font-size:clamp(12px,1.5vw,19px); color:var(--muted); }
+  .foot-tag b{ color:var(--text); font-weight:500; }
+  .foot-managed{ display:flex; align-items:center; gap:.7em; font-size:clamp(11px,1.25vw,15px); color:var(--faint); letter-spacing:.04em; }
+  .monogram{
+    width:1.9em; height:1.9em; border-radius:50%; flex:none;
+    border:1.5px solid var(--gold); color:var(--gold);
+    display:grid; place-items:center; font-family:"Jost",sans-serif; font-weight:500; font-size:1em;
   }
 
-  /* middle: huge clock, left-aligned */
-  .info-middle{
-    flex:1;
-    display:flex; flex-direction:column; justify-content:center;
-    gap: clamp(16px, 2vw, 32px);
+  /* ---------- GEAR + EDITOR ---------- */
+  #gear{
+    position:fixed; right:18px; bottom:16px; z-index:40;
+    width:46px; height:46px; border-radius:50%;
+    background:rgba(255,255,255,.1); color:#fff; border:1px solid var(--border-strong);
+    display:grid; place-items:center; cursor:pointer; backdrop-filter:blur(6px);
+    opacity:0; transition:opacity .25s; pointer-events:none;
   }
-  .clock{
-    display:flex; align-items:flex-start; gap:.18em;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 4px 60px rgba(0,0,0,.45);
-  }
-  .hm{
-    font-size: clamp(110px, 17vw, 280px);
-    font-weight:200;
-    line-height:.82;
-    letter-spacing:-.022em;
-  }
-  .clock .meta{
-    display:flex; flex-direction:column; gap:.35em;
-    padding-top:.6em;
-    font-weight:500;
-  }
-  .ampm{
-    font-size: clamp(20px, 2vw, 36px);
-    letter-spacing:.22em;
-    color: var(--gold);
-  }
-  .secs{
-    font-size: clamp(20px, 2vw, 36px);
-    color: var(--muted);
-    font-weight:300;
-  }
-  .tagline{
-    font-size: clamp(11px, 1vw, 16px);
-    text-transform:uppercase; letter-spacing:.42em;
-    color: var(--soft);
-    font-weight:400;
-    line-height: 1.6;
-  }
-  .tagline .gold-rule{
-    display:inline-block;
-    width: clamp(28px, 4vw, 60px);
-    height:1px; background: var(--gold);
-    vertical-align:middle;
-    margin: 0 1.2em;
-    transform:translateY(-2px);
-  }
+  body.show-cursor #gear{ opacity:.9; pointer-events:auto; }
+  #gear:hover{ opacity:1; }
+  #gear svg{ width:23px; height:23px; }
 
-  /* greeting above the clock */
-  .greeting{
-    font-family:"Playfair Display", serif;
-    font-style: italic;
-    font-size: clamp(30px, 3.2vw, 54px);
-    line-height: 1;
-    color: var(--gold);
-    font-weight: 400;
-    letter-spacing: 0;
-    margin-bottom: clamp(-4px, -0.4vw, -10px);
-  }
+  .editor-overlay{ position:fixed; inset:0; z-index:50; background:rgba(6,12,22,.6); display:none; justify-content:flex-end; cursor:default; }
+  .editor-overlay.show{ display:flex; }
+  .editor{ width:min(560px,100%); height:100%; background:#fff; color:#18222F; box-shadow:-12px 0 40px rgba(0,0,0,.4); display:flex; flex-direction:column; font-family:"Inter",sans-serif; }
+  .editor h2{ font-family:"Jost",sans-serif; font-weight:500; letter-spacing:.04em; margin:0; font-size:20px; color:#16263F; }
+  .editor-top{ padding:18px 22px; border-bottom:1px solid #ECE7DC; display:flex; align-items:center; justify-content:space-between; }
+  .editor-top .x{ border:none; background:#F2EFE8; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:18px; color:#18222F; }
+  .editor-hint{ padding:12px 22px; background:#F7F4ED; color:#66717E; font-size:12.5px; line-height:1.5; border-bottom:1px solid #ECE7DC; }
+  .editor-hint b{ color:#18222F; } .editor-hint code{ background:#ECE7DC; padding:1px 5px; border-radius:4px; font-size:11.5px; }
+  .editor-body{ flex:1; overflow-y:auto; padding:14px 22px 22px; cursor:auto; }
+  .ed-section{ border:1px solid #E5E0D4; border-radius:10px; margin-bottom:16px; overflow:hidden; }
+  .ed-section-head{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:#FAF8F2; border-bottom:1px solid #ECE7DC; }
+  .ed-section-head input.sec-name{ flex:1; font-weight:600; }
+  .tone-swatch{ width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; }
+  .tone-swatch.sel{ outline:2px solid #18222F; outline-offset:1px; }
+  .tone-navy{ background:#C9A24C; } .tone-slate{ background:#7FA0C2; } .tone-sage{ background:#92B4A0; }
+  .ed-entries{ padding:8px 10px; }
+  .ed-entry{ display:flex; gap:8px; margin-bottom:8px; align-items:flex-start; }
+  .ed-entry input.suite{ width:66px; flex:none; text-align:center; }
+  .ed-entry textarea.name{ flex:1; resize:vertical; min-height:38px; font-family:inherit; }
+  .ed-entry .del, .ed-section-head .del{ border:none; background:#F4E7E2; color:#b4543c; width:34px; height:38px; border-radius:7px; cursor:pointer; flex:none; font-size:16px; }
+  .editor input, .editor textarea{ border:1px solid #D9D3C6; border-radius:7px; padding:8px 10px; font-size:13.5px; color:#18222F; background:#fff; }
+  .editor input:focus, .editor textarea:focus{ outline:2px solid #7FA0C2; border-color:#7FA0C2; }
+  .add-entry, .add-section{ border:1px dashed #C7BFAE; background:#fff; color:#5C7286; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px; font-weight:600; }
+  .add-section{ width:100%; margin-top:4px; }
+  .editor-actions{ border-top:1px solid #ECE7DC; padding:14px 22px; display:flex; flex-wrap:wrap; gap:10px; }
+  .btn{ border:none; border-radius:8px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-primary{ background:#16263F; color:#fff; } .btn-ghost{ background:#F2EFE8; color:#18222F; } .btn-ghost.danger{ color:#b4543c; }
+  .toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#16263F; color:#fff; padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600; z-index:60; opacity:0; transition:opacity .25s; pointer-events:none; border:1px solid var(--border-strong); }
+  .toast.show{ opacity:1; }
 
-  /* bottom: weather + hours, side by side */
-  .info-footer{
-    border-top: 1px solid var(--rule);
-    padding-top: clamp(18px, 2vw, 32px);
-    display:flex; align-items:center;
-    gap: clamp(18px, 2vw, 36px);
+  /* landscape / wide screens: use more columns so it still fills nicely */
+  @media (min-aspect-ratio:1/1){
+    .directory{ grid-template-columns:repeat(3,1fr); }
   }
-  .info-footer > .cell{
-    display:flex; align-items:center;
-    gap: clamp(14px, 1.4vw, 22px);
-    flex:1; min-width:0;
-  }
-  .vsep{
-    width:1px; background: var(--rule);
-    align-self:stretch;
-    flex: none;
-  }
-  .wx-icon{ color: var(--ink); display:flex; }
-  .wx-icon svg{ width: clamp(48px, 4.4vw, 72px); height:auto; }
-  .wx-meta{ display:flex; flex-direction:column; line-height:1.15; gap:.18em; min-width:0; }
-  .temp{
-    font-size: clamp(32px, 3.2vw, 56px);
-    font-weight:300;
-    letter-spacing:-.01em;
-    white-space:nowrap;
-  }
-  .cond{
-    font-size: clamp(11px,1.1vw,16px);
-    color: var(--soft);
-    text-transform:uppercase; letter-spacing:.22em;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .loc{
-    font-size: clamp(9px,.82vw,12px);
-    text-transform:uppercase; letter-spacing:.36em;
-    color: var(--gold);
-    font-weight:500;
-  }
-  /* "Closed" gets a different accent so it reads at a glance */
-  .temp.closed{ color: var(--gold); }
-
-  /* portrait layout: stack vertically */
-  @media (max-aspect-ratio: 1/1), (max-width: 720px){
-    .content{ grid-template-columns: 1fr; grid-template-rows: 38fr 62fr; }
-    .photo-panel::before{ display:none; }
-    .photo-panel::after{
-      background:
-        linear-gradient(0deg, rgba(13,28,46,.95) 0%, rgba(13,28,46,0) 50%),
-        linear-gradient(0deg, rgba(30,58,95,.20), rgba(30,58,95,.20));
-    }
-  }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
 </style>
 </head>
 <body>
-  <div class="content">
-    <div class="photo-panel">
-      <img id="bgImage" alt="" />
-      <video id="bgVideo" muted loop playsinline></video>
-      <div class="photo-caption">
-        <span class="pc-label">Welcome</span>
-        <span class="pc-addr" id="addr">1860 El Camino Real<br>Burlingame, CA 94010</span>
+  <div class="stage">
+    <header>
+      <div class="eyebrow" id="welcome">Welcome to</div>
+      <h1 class="title"><span class="l1" id="name1">Burlingame</span><span class="l2" id="name2">Medical Center</span></h1>
+      <div class="rule"></div>
+      <div class="address" id="address">1860 El Camino Real, Burlingame</div>
+    </header>
+
+    <div class="live">
+      <div class="clock">
+        <div class="time" id="time">--:--</div>
+        <div class="cdate"><b id="greeting">Welcome</b> · <span id="date">—</span></div>
+      </div>
+      <div class="live-row">
+        <div class="weather" id="weather">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#9DB0C4" stroke-width="1.6"><circle cx="12" cy="12" r="4"/></svg>
+          <div>
+            <div class="wx-temp" id="wxTemp">—°</div>
+            <div class="wx-meta"><b id="wxCond">Loading…</b><br>Burlingame, CA</div>
+          </div>
+        </div>
+        <div class="status-pill" id="status"><span class="dot"></span><span id="statusText">—</span></div>
       </div>
     </div>
 
-    <div class="info-panel">
-      <div class="info-header">
-        <div class="logo">
-          <div class="logo-mark"><span class="logo-c">C</span></div>
-          <div class="wordmark">
-            <span class="wm-main" id="brandName">Chavez</span>
-            <span class="wm-sub" id="brandSub">Management Group, Inc.</span>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="date" id="date">—</div>
-          <div class="live"><span class="dot"></span><span>Now</span></div>
-        </div>
-      </div>
+    <main class="dir-area" id="dirArea">
+      <div class="directory" id="directory"></div>
+    </main>
 
-      <div class="info-middle">
-        <div class="greeting" id="greeting">Good Morning</div>
-        <div class="clock">
-          <span class="hm" id="time">--:--</span>
-          <div class="meta">
-            <span class="ampm" id="ampm">--</span>
-            <span class="secs" id="secs">--</span>
-          </div>
-        </div>
-        <div class="tagline" id="tagline">
-          Family Owned <span class="gold-rule"></span> Serving Northern California for over 40 years
-        </div>
-      </div>
+    <footer>
+      <div class="foot-tag"><b>Family owned</b> · Serving Northern California for over 40 years</div>
+      <div class="foot-managed"><span class="monogram">C</span> Chavez Management Group, Inc. · Penthouse 500</div>
+    </footer>
+  </div>
 
-      <div class="info-footer">
-        <div class="cell">
-          <div class="wx-icon" id="wxIcon"></div>
-          <div class="wx-meta">
-            <span class="temp" id="temp">—</span>
-            <span class="cond" id="cond">Loading…</span>
-            <span class="loc" id="loc">Burlingame</span>
-          </div>
-        </div>
-        <div class="vsep"></div>
-        <div class="cell">
-          <div class="wx-meta">
-            <span class="temp" id="hoursStatus">Open</span>
-            <span class="cond" id="hoursDetail">Until 5:00 PM</span>
-            <span class="loc" id="hoursSchedule">Mon–Fri · 9 to 5</span>
-          </div>
-        </div>
+  <button id="gear" title="Edit directory" aria-label="Edit directory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+
+  <div class="editor-overlay" id="editorOverlay">
+    <div class="editor">
+      <div class="editor-top"><h2>Edit directory</h2><button class="x" id="editorClose" aria-label="Close">✕</button></div>
+      <div class="editor-hint"><b>Save to this screen</b> updates this device only. To change <b>every</b> screen, click <b>Copy directory code</b> and paste it into your GitHub <code>index.html</code> (replace the <code>PUBLISHED_DIRECTORY</code> block), then commit.</div>
+      <div class="editor-body" id="editorBody"></div>
+      <div class="editor-actions">
+        <button class="btn btn-primary" id="saveLocal">Save to this screen</button>
+        <button class="btn btn-ghost" id="copyCode">Copy directory code</button>
+        <button class="btn btn-ghost danger" id="resetLocal">Reset to published</button>
       </div>
     </div>
   </div>
+  <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   EDIT THIS BLOCK — same as the other layout files.
-   ============================================================ */
-const CONFIG = {
-  brandMain: "Chavez",
-  brandSub:  "Management Group, Inc.",
-  tagline:   'Family Owned <span class="gold-rule"></span> Serving Northern California for over 40 years',
-  addressLine: "1860 El Camino Real<br>Burlingame, CA 94010",
-  imageUrl: "building.jpg",
-  videoUrl: "",
-  latitude:      37.5841,
-  longitude:    -122.3661,
-  locationLabel: "Burlingame",
-  units:        "fahrenheit",
-
-  // Office hours (24-hour format). Set weekdays as 0=Sun, 1=Mon, ..., 6=Sat
-  hours: {
-    openHour:  9,            // 9:00 AM
-    closeHour: 17,           // 5:00 PM
-    openDays:  [1,2,3,4,5],  // Mon–Fri
-    schedule:  "Mon–Fri · 9 to 5",
-  },
-  hour12:      true,
-  showSeconds: true,
+/* =================================================================
+   PUBLISHED DIRECTORY  —  edit here, then commit to GitHub.
+   tone: "navy" (gold accent) | "slate" (blue) | "sage" (green)
+   ================================================================= */
+const PUBLISHED_DIRECTORY = {
+  building: { welcome:"Welcome to", name1:"Burlingame", name2:"Medical Center", address:"1860 El Camino Real, Burlingame" },
+  sections: [
+    { title:"Basement", tone:"navy", entries:[
+      { suite:"50",  name:"Bello Allergy and Wellness Center – Dr. Yan Allergist (Lower Level)" },
+      { suite:"55",  name:"Express Rehab / Crown & Wink / Dr. Yan Yan, MD Allergist (Lower Level)" }
+    ]},
+    { title:"1st Floor", tone:"slate", entries:[
+      { suite:"100", name:"Upward Credit Union" },
+      { suite:"101", name:"Unio Specialty Care | Gastroenterology — Mark Tsuchiyose, MD | Rowena…" },
+      { suite:"105", name:"Dr. Nabeel Madanat M.D., F.A.A.P. – Pediatrics" },
+      { suite:"108", name:"A&O Peninsula Pharmacy" }
+    ]},
+    { title:"2nd Floor", tone:"sage", entries:[
+      { suite:"200", name:"Dr. Simon Lee, MD FACP — Internal Medicine, Immigration Exam / Simon…" },
+      { suite:"201", name:"Select Physical Therapy" },
+      { suite:"207", name:"Ambus, Peggy, D.D.S. / Bahlinger, Michael, D.D.S." },
+      { suite:"221", name:"Sha & Company" },
+      { suite:"228", name:"William Chau, M.S., D.C., N.M.D. – Alternative Nature Medicine" },
+      { suite:"236", name:"WOWME Beauty" },
+      { suite:"250", name:"Mindful Health Solutions" }
+    ]},
+    { title:"3rd Floor", tone:"navy", entries:[
+      { suite:"301", name:"Glatt, Daniel, M.D. / Novales, Susan, ANP-C / The Coleman Institute" },
+      { suite:"304", name:"Precision Hearing" },
+      { suite:"305", name:"Nest Dental" },
+      { suite:"310", name:"Jain, Rashmi MD / Kao, Albert MD / Tseng, Robert MD / Angeli, Daniel MD" },
+      { suite:"321", name:"Batlin, Andra, M.D. / Lakowsky, Alexander, M.D., M.B.A." }
+    ]},
+    { title:"4th Floor", tone:"sage", entries:[
+      { suite:"406",  name:"RTS: A Center for Healing and Violence Prevention" },
+      { suite:"420",  name:"BMC" },
+      { suite:"428",  name:"Hong, Hoyland, M.D." },
+      { suite:"438",  name:"Korody Business Services" },
+      { suite:"438A", name:"Levenson & Zieman – Attorneys At Law" },
+      { suite:"439",  name:"Burlingame Pacifica Medical Group, Inc." }
+    ]},
+    { title:"Penthouse", tone:"navy", entries:[
+      { suite:"500", name:"Chavez Management Group, Inc." }
+    ]}
+  ]
 };
-/* ============================================================ */
 
-const ic = {
-  sun:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>`,
-  moon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8z"/></svg>`,
-  cloud:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 18z"/></svg>`,
-  cloudSun:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 2.6V4M2.6 8H4M4.3 4.3l1 1M11.7 4.3l-1 1M12 8h-.4"/><path d="M9 19a3.2 3.2 0 0 1 .2-6.4 4 4 0 0 1 7.5.9A2.8 2.8 0 0 1 16.5 19z"/></svg>`,
-  cloudMoon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.3a4.4 4.4 0 1 0 4.4 6"/><path d="M9 19a3.2 3.2 0 0 1 .2-6.4 4 4 0 0 1 7.5.9A2.8 2.8 0 0 1 16.5 19z"/></svg>`,
-  fog:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 13z"/><path d="M4 17h16M6 20.5h12"/></svg>`,
-  rain:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 14z"/><path d="M8 17.5l-1 2.5M12 17.5l-1 2.5M16 17.5l-1 2.5"/></svg>`,
-  snow:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 14z"/><path d="M8 19h.01M12 20.5h.01M16 19h.01M10 17.5h.01M14 17.5h.01"/></svg>`,
-  storm:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.3A3.5 3.5 0 0 1 17 14z"/><path d="M12.5 14l-2.2 4H13l-2.2 4"/></svg>`,
-};
-// --- map an NWS icon URL to one of our SVG icons + a clean label ---
-// NWS icon URLs look like:  https://api.weather.gov/icons/land/day/few?size=medium
-// The path segment we care about is the slug after "day" or "night".
-// Slug reference: https://api.weather.gov/icons (skc, few, sct, bkn, ovc, fog, rain, snow, tsra, ...)
-function nwsIcon(iconUrl, textDescription){
-  let slug = "", isDay = true;
-  if(typeof iconUrl === "string"){
-    const m = iconUrl.match(/\/(day|night)\/([a-z_]+)/);
-    if(m){ isDay = (m[1] === "day"); slug = m[2]; }
-  }
-  // Strip any percent-chance suffix like "rain,40" — only first slug matters
-  slug = slug.split(",")[0];
+const OFFICE = { openHour:9, closeHour:17, days:[1,2,3,4,5] };
+const STORAGE_KEY = "bmc_directory_override_v2";
 
-  // Map slug families to our existing SVG set
-  let icon;
-  if(slug === "skc" || slug === "hot")                                       icon = isDay ? ic.sun : ic.moon;
-  else if(slug === "few" || slug === "sct")                                  icon = isDay ? ic.cloudSun : ic.cloudMoon;
-  else if(slug === "bkn" || slug === "ovc" || slug === "cold" || slug === "wind_bkn" || slug === "wind_ovc" || slug === "wind_sct" || slug === "wind_few" || slug === "wind_skc") icon = ic.cloud;
-  else if(slug === "fog" || slug === "smoke" || slug === "haze" || slug === "dust")  icon = ic.fog;
-  else if(slug.startsWith("rain") || slug.startsWith("shower") || slug === "fzra" || slug === "rain_fzra" || slug === "rain_sleet")  icon = ic.rain;
-  else if(slug.startsWith("snow") || slug === "blizzard" || slug === "rain_snow" || slug === "snow_sleet" || slug === "sleet")        icon = ic.snow;
-  else if(slug === "tsra" || slug === "tsra_sct" || slug === "tsra_hi" || slug === "tornado" || slug === "hurricane" || slug === "tropical_storm") icon = ic.storm;
-  else                                                                         icon = isDay ? ic.cloudSun : ic.cloudMoon;
+function loadOverride(){ try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function saveOverride(d){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); return true; }catch(e){ return false; } }
+function clearOverride(){ try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} }
+function currentData(){ const o=loadOverride(); return (o&&o.sections)?o:PUBLISHED_DIRECTORY; }
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
-  // Build a clean Title Case label from NWS textDescription
-  let label = (textDescription || "—").trim();
-  // Title case (NWS sometimes returns ALL CAPS or sentence case)
-  label = label.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-  return { label, icon };
+function render(){
+  const data = currentData();
+  const b = data.building || PUBLISHED_DIRECTORY.building;
+  document.getElementById("welcome").textContent = b.welcome || "Welcome to";
+  document.getElementById("name1").textContent   = b.name1 || "";
+  document.getElementById("name2").textContent   = b.name2 || "";
+  document.getElementById("address").textContent = b.address || "";
+  document.title = [b.name1,b.name2].filter(Boolean).join(" ") + " — Directory";
+
+  const dir = document.getElementById("directory");
+  dir.innerHTML = (data.sections||[]).map(sec=>{
+    const tone = ["navy","slate","sage"].includes(sec.tone) ? sec.tone : "navy";
+    const rows = (sec.entries||[]).map(e=>`
+      <div class="entry"><div class="name">${escapeHtml(e.name||"")}</div><div class="suite">${escapeHtml(e.suite||"")}</div></div>`).join("");
+    return `<div class="section ${tone}"><div class="section-head">${escapeHtml(sec.title||"")}</div>${rows}</div>`;
+  }).join("");
+  requestAnimationFrame(fitDirectory);
 }
-const $ = id => document.getElementById(id);
-$("brandName").textContent = CONFIG.brandMain;
-$("brandSub").textContent  = CONFIG.brandSub;
-$("tagline").innerHTML     = CONFIG.tagline;
-$("addr").innerHTML        = CONFIG.addressLine;
-$("loc").textContent       = CONFIG.locationLabel;
-document.title             = CONFIG.brandMain + " " + CONFIG.brandSub;
-(function(){
-  const img = $("bgImage"), vid = $("bgVideo");
-  if(CONFIG.videoUrl){ vid.src = CONFIG.videoUrl; vid.style.display="block"; img.style.display="none"; vid.play().catch(()=>{}); }
-  else if(CONFIG.imageUrl){ img.src = CONFIG.imageUrl; img.onerror = ()=>{ img.style.display="none"; }; }
-  else { img.style.display="none"; }
-})();
-function updateClock(){
+
+/* ---- auto-fit: scale the list so every tenant always shows ---- */
+function fitDirectory(){
+  const area = document.getElementById("dirArea");
+  const grid = document.getElementById("directory");
+  grid.style.transform = "none";
+  const avail = area.clientHeight, needed = grid.scrollHeight;
+  if(!avail || !needed) return;
+  const s = needed > avail ? (avail / needed) : 1;   // no minimum — always fit every tenant
+  grid.style.transform = s < 1 ? `scale(${s})` : "none";
+}
+window.addEventListener("resize", ()=>requestAnimationFrame(fitDirectory));
+window.addEventListener("load", ()=>requestAnimationFrame(fitDirectory));
+setTimeout(fitDirectory, 300);
+if(window.ResizeObserver){ new ResizeObserver(()=>requestAnimationFrame(fitDirectory)).observe(document.getElementById("dirArea")); }
+if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>requestAnimationFrame(fitDirectory)); }
+
+/* ---------- clock + greeting + status ---------- */
+const TZ = "America/Los_Angeles";
+function tick(){
   const now = new Date();
-  let h = now.getHours();
-  const m = String(now.getMinutes()).padStart(2,"0");
-  let ampm = "";
-  if(CONFIG.hour12){ ampm = h >= 12 ? "PM" : "AM"; h = h % 12; if(h === 0) h = 12; }
-  const hh = CONFIG.hour12 ? String(h) : String(h).padStart(2,"0");
-  $("time").textContent = hh + ":" + m;
-  $("ampm").textContent = ampm;
-  $("ampm").style.display = CONFIG.hour12 ? "" : "none";
-  $("secs").textContent = String(now.getSeconds()).padStart(2,"0");
-  $("secs").style.display = CONFIG.showSeconds ? "" : "none";
-  $("date").textContent = now.toLocaleDateString(undefined,{ weekday:"long", month:"long", day:"numeric" });
+  const parts = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, hour:"numeric", minute:"2-digit", hour12:true }).formatToParts(now);
+  let hh="",mm="",ap=""; parts.forEach(p=>{ if(p.type==="hour")hh=p.value; if(p.type==="minute")mm=p.value; if(p.type==="dayPeriod")ap=p.value; });
+  document.getElementById("time").innerHTML = `${hh}:${mm}<span class="ampm">${ap}</span>`;
+  document.getElementById("date").textContent = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, weekday:"long", month:"long", day:"numeric" }).format(now);
+  const hr = parseInt(new Intl.DateTimeFormat("en-US",{ timeZone:TZ, hour:"numeric", hour12:false }).format(now),10) % 24;
+  document.getElementById("greeting").textContent = hr<12 ? "Good morning" : hr<17 ? "Good afternoon" : "Good evening";
+  const wd = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, weekday:"short" }).format(now);
+  const dayIdx = ({Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6})[wd];
+  const isOpen = OFFICE.days.includes(dayIdx) && hr>=OFFICE.openHour && hr<OFFICE.closeHour;
+  const pill = document.getElementById("status");
+  pill.classList.toggle("open", isOpen); pill.classList.toggle("closed", !isOpen);
+  document.getElementById("statusText").textContent = isOpen ? "Open · Until 5:00 PM" : "Closed · Mon–Fri 9–5";
 }
 
-// --- time-aware greeting ---
-function updateGreeting(){
-  const h = new Date().getHours();
-  let g;
-  if(h >= 5  && h < 12) g = "Good Morning";
-  else if(h >= 12 && h < 17) g = "Good Afternoon";
-  else if(h >= 17 && h < 22) g = "Good Evening";
-  else                       g = "Welcome";
-  $("greeting").textContent = g;
+/* ---------- weather (Open-Meteo, no key) ---------- */
+const WX_LAT=37.5841, WX_LON=-122.3661;
+function wxIcon(code,isDay){
+  const S="#9DB0C4";
+  if(code===0) return isDay
+    ? `<circle cx="12" cy="12" r="4.5" fill="#E0B454" stroke="none"/><g stroke="#E0B454" stroke-width="1.7" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.1" y2="19.1"/><line x1="19.1" y1="4.9" x2="17.3" y2="6.7"/><line x1="6.7" y1="17.3" x2="4.9" y2="19.1"/></g>`
+    : `<path d="M17 14a5 5 0 1 1-5-9 6 6 0 1 0 5 9z" fill="#C9D4E2" stroke="none"/>`;
+  if(code===1||code===2) return `<circle cx="9" cy="9" r="3.5" fill="#E0B454" stroke="none"/><path d="M8 18h9a3.5 3.5 0 0 0 .2-7 5 5 0 0 0-9.4-.6A3.5 3.5 0 0 0 8 18z" fill="rgba(255,255,255,.92)" stroke="${S}" stroke-width="1.4"/>`;
+  if(code===3||code===45||code===48) return `<path d="M7 18h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 18z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/>`;
+  if((code>=51&&code<=67)||(code>=80&&code<=82)) return `<path d="M7 15h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 15z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><g stroke="#7FA0C2" stroke-width="1.8" stroke-linecap="round"><line x1="9" y1="18" x2="8" y2="21"/><line x1="13" y1="18" x2="12" y2="21"/><line x1="17" y1="18" x2="16" y2="21"/></g>`;
+  if((code>=71&&code<=77)||code===85||code===86) return `<path d="M7 14h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 14z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><g fill="#CBD8E6"><circle cx="9" cy="19" r="1"/><circle cx="13" cy="20.5" r="1"/><circle cx="16" cy="18.5" r="1"/></g>`;
+  if(code>=95) return `<path d="M7 13h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 13z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><path d="M12 14l-2.5 4H12l-1 3 3.5-4.5H12l1.5-2.5z" fill="#E0B454" stroke="none"/>`;
+  return `<circle cx="12" cy="12" r="4" stroke="${S}" stroke-width="1.6" fill="none"/>`;
 }
-
-// --- office hours: live open / closed status ---
-function fmtHour(h){
-  const ampm = h >= 12 ? "PM" : "AM";
-  let hh = h % 12; if(hh === 0) hh = 12;
-  return hh + " " + ampm;
-}
-function dayName(d){ return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d]; }
-function updateHours(){
-  const cfg = CONFIG.hours;
-  const now = new Date();
-  const day = now.getDay();
-  const minutesNow = now.getHours()*60 + now.getMinutes();
-  const openMin  = cfg.openHour  * 60;
-  const closeMin = cfg.closeHour * 60;
-  const isOpenDay = cfg.openDays.includes(day);
-  const isOpenNow = isOpenDay && minutesNow >= openMin && minutesNow < closeMin;
-
-  const statusEl   = $("hoursStatus");
-  const detailEl   = $("hoursDetail");
-  const scheduleEl = $("hoursSchedule");
-
-  scheduleEl.textContent = cfg.schedule;
-
-  if(isOpenNow){
-    statusEl.textContent = "Open";
-    statusEl.classList.remove("closed");
-    detailEl.textContent = "Until " + fmtHour(cfg.closeHour);
-  } else {
-    statusEl.textContent = "Closed";
-    statusEl.classList.add("closed");
-    // figure out the next open day
-    let next = day;
-    if(isOpenDay && minutesNow < openMin){
-      // closed but opens later today
-      detailEl.textContent = "Opens Today at " + fmtHour(cfg.openHour);
-      return;
-    }
-    // otherwise look forward up to 7 days for the next openDay
-    for(let i=1; i<=7; i++){
-      next = (day + i) % 7;
-      if(cfg.openDays.includes(next)){
-        const label = (i === 1) ? "Tomorrow" : dayName(next);
-        detailEl.textContent = "Opens " + label + " at " + fmtHour(cfg.openHour);
-        return;
-      }
-    }
-  }
-}
-// --- weather via the National Weather Service (api.weather.gov) ---
-// Discovery is a 3-step dance: lat/lng -> grid/stations URL -> nearest station id.
-// The first two only change if you move the building, so we cache the station id.
-let _nwsStationId = null;
-
-async function discoverStation(){
-  if(_nwsStationId) return _nwsStationId;
-  // 1) /points
-  const pts  = await fetch(`https://api.weather.gov/points/${CONFIG.latitude},${CONFIG.longitude}`,
-                           { headers: { "Accept": "application/geo+json" } });
-  if(!pts.ok) throw new Error("nws points " + pts.status);
-  const ptsJson = await pts.json();
-  const stationsUrl = ptsJson.properties.observationStations;
-
-  // 2) /gridpoints/.../stations
-  const stRes = await fetch(stationsUrl, { headers: { "Accept": "application/geo+json" } });
-  if(!stRes.ok) throw new Error("nws stations " + stRes.status);
-  const stJson = await stRes.json();
-  if(!stJson.features || !stJson.features.length) throw new Error("no stations");
-  _nwsStationId = stJson.features[0].properties.stationIdentifier;
-  return _nwsStationId;
-}
-
-async function updateWeather(){
+function wxText(code){ const m={0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Light drizzle",53:"Drizzle",55:"Drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",77:"Snow",80:"Rain showers",81:"Rain showers",82:"Heavy showers",85:"Snow showers",86:"Snow showers",95:"Thunderstorm",96:"Thunderstorm",99:"Thunderstorm"}; return m[code]||"—"; }
+async function loadWeather(){
   try{
-    const station = await discoverStation();
-    // 3) /stations/{id}/observations/latest
-    const obsRes = await fetch(`https://api.weather.gov/stations/${station}/observations/latest`,
-                               { headers: { "Accept": "application/geo+json" } });
-    if(!obsRes.ok) throw new Error("nws obs " + obsRes.status);
-    const p = (await obsRes.json()).properties;
-
-    // Temperature: NWS gives Celsius. Convert per CONFIG.units.
-    let tempC = (p.temperature && p.temperature.value !== null) ? p.temperature.value : null;
-    // Observation stations occasionally return null (no recent reading). Try the previous obs.
-    if(tempC === null){
-      const obs2 = await fetch(`https://api.weather.gov/stations/${station}/observations?limit=5`,
-                               { headers: { "Accept": "application/geo+json" } });
-      if(obs2.ok){
-        const list = (await obs2.json()).features || [];
-        const fresh = list.find(f => f.properties && f.properties.temperature && f.properties.temperature.value !== null);
-        if(fresh){
-          tempC = fresh.properties.temperature.value;
-          // also reuse this observation for icon/description if the latest was incomplete
-          if(!p.icon) p.icon = fresh.properties.icon;
-          if(!p.textDescription) p.textDescription = fresh.properties.textDescription;
-        }
-      }
-    }
-    if(tempC === null) throw new Error("no temperature available");
-
-    const isF = CONFIG.units === "fahrenheit";
-    const displayTemp = isF ? (tempC * 9/5 + 32) : tempC;
-
-    const info = nwsIcon(p.icon, p.textDescription);
-    $("temp").textContent  = Math.round(displayTemp) + "°";
-    $("wxIcon").innerHTML  = info.icon;
-    $("cond").textContent  = info.label;
-  }catch(e){
-    $("cond").textContent = "Weather Unavailable";
-    // Reset station cache so the next attempt re-discovers (in case the station was removed)
-    _nwsStationId = null;
-  }
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles`;
+    const r=await fetch(url,{cache:"no-store"}); const d=await r.json(); const c=d.current;
+    document.getElementById("wxTemp").textContent=Math.round(c.temperature_2m)+"°";
+    document.getElementById("wxCond").textContent=wxText(c.weather_code);
+    document.querySelector(".weather svg").innerHTML=wxIcon(c.weather_code, c.is_day===1);
+  }catch(e){ document.getElementById("wxCond").textContent="Weather unavailable"; }
 }
-let cursorTimer;
-function nudgeCursor(){
-  document.body.style.cursor = "default";
-  clearTimeout(cursorTimer);
-  cursorTimer = setTimeout(() => document.body.style.cursor = "none", 3000);
+
+/* ============================ EDITOR ============================ */
+let draft=null;
+const overlay=document.getElementById("editorOverlay");
+const edBody=document.getElementById("editorBody");
+function openEditor(){ draft=deepClone(currentData()); renderEditor(); overlay.classList.add("show"); }
+function closeEditor(){ overlay.classList.remove("show"); }
+function renderEditor(){
+  edBody.innerHTML=(draft.sections||[]).map((sec,si)=>{
+    const tones=["navy","slate","sage"].map(t=>`<span class="tone-swatch tone-${t} ${sec.tone===t?'sel':''}" data-si="${si}" data-tone="${t}" title="${t}"></span>`).join("");
+    const entries=(sec.entries||[]).map((e,ei)=>`
+      <div class="ed-entry">
+        <input class="suite" data-si="${si}" data-ei="${ei}" data-f="suite" value="${escapeHtml(e.suite||'')}" placeholder="#" />
+        <textarea class="name" data-si="${si}" data-ei="${ei}" data-f="name" placeholder="Tenant name">${escapeHtml(e.name||'')}</textarea>
+        <button class="del" data-si="${si}" data-ei="${ei}" title="Remove">✕</button>
+      </div>`).join("");
+    return `<div class="ed-section"><div class="ed-section-head">${tones}<input class="sec-name" data-si="${si}" data-f="title" value="${escapeHtml(sec.title||'')}" /><button class="del" data-si="${si}" data-secdel="1" title="Remove floor">✕</button></div><div class="ed-entries">${entries}<button class="add-entry" data-si="${si}">+ Add tenant</button></div></div>`;
+  }).join("")+`<button class="add-section" id="addSection">+ Add floor / section</button>`;
 }
-window.addEventListener("mousemove", nudgeCursor);
-nudgeCursor();
-updateClock(); setInterval(updateClock, 1000);
-updateGreeting(); setInterval(updateGreeting, 60 * 1000);
-updateHours();    setInterval(updateHours,    60 * 1000);
-updateWeather(); setInterval(updateWeather, 10 * 60 * 1000);
+edBody.addEventListener("input", e=>{
+  const t=e.target, si=+t.dataset.si;
+  if(t.dataset.secdel) return;
+  if(t.classList.contains("sec-name")){ draft.sections[si].title=t.value; return; }
+  if(t.dataset.f && t.dataset.ei!==undefined && t.dataset.ei!==""){ draft.sections[si].entries[+t.dataset.ei][t.dataset.f]=t.value; }
+});
+edBody.addEventListener("click", e=>{
+  const t=e.target.closest("[data-si],#addSection"); if(!t) return;
+  if(t.id==="addSection"){ draft.sections.push({title:"New Floor",tone:"slate",entries:[{suite:"",name:""}]}); renderEditor(); return; }
+  const si=+t.dataset.si;
+  if(t.classList.contains("tone-swatch")){ draft.sections[si].tone=t.dataset.tone; renderEditor(); return; }
+  if(t.dataset.secdel){ draft.sections.splice(si,1); renderEditor(); return; }
+  if(t.classList.contains("add-entry")){ draft.sections[si].entries.push({suite:"",name:""}); renderEditor(); return; }
+  if(t.classList.contains("del") && t.dataset.ei!==undefined){ draft.sections[si].entries.splice(+t.dataset.ei,1); renderEditor(); return; }
+});
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2200); }
+document.getElementById("saveLocal").addEventListener("click", ()=>{ if(saveOverride(draft)){ render(); toast("Saved to this screen"); closeEditor(); } else toast("Couldn't save on this device"); });
+document.getElementById("resetLocal").addEventListener("click", ()=>{ clearOverride(); draft=deepClone(PUBLISHED_DIRECTORY); renderEditor(); render(); toast("Reset to the published version"); });
+document.getElementById("copyCode").addEventListener("click", async ()=>{
+  const code="const PUBLISHED_DIRECTORY = "+JSON.stringify(draft,null,2)+";";
+  try{ await navigator.clipboard.writeText(code); toast("Directory code copied — paste into GitHub"); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=code; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Directory code copied"); }catch(_){ toast("Copy failed — select manually"); } document.body.removeChild(ta); }
+});
+document.getElementById("gear").addEventListener("click", openEditor);
+document.getElementById("editorClose").addEventListener("click", closeEditor);
+overlay.addEventListener("click", e=>{ if(e.target===overlay) closeEditor(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeEditor(); });
+
+/* ---------- signage idle cursor ---------- */
+let idleTimer;
+function wake(){ document.body.classList.add("show-cursor"); clearTimeout(idleTimer); idleTimer=setTimeout(()=>{ if(!overlay.classList.contains("show")) document.body.classList.remove("show-cursor"); },4000); }
+["mousemove","touchstart","keydown"].forEach(ev=>document.addEventListener(ev,wake));
+
+/* ---------- boot ---------- */
+render();
+tick(); setInterval(tick,1000);
+loadWeather(); setInterval(loadWeather,10*60*1000);
+setInterval(()=>{ if(!overlay.classList.contains("show")) location.reload(); }, 30*60*1000);
 </script>
 </body>
 </html>
