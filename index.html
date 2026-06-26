@@ -284,8 +284,12 @@
 const DROPBOX = {
   APP_KEY:       "eghloosdqywnvyo",
   APP_SECRET:    "pi9ptb2f5ezpwca",
-  REFRESH_TOKEN: "V9HZpn1DvkoAAAAAAAAAAUIStnAB94zDA7s3oXT83oG70CSjPC563Nnj-Jk0hHzs",
-  FOLDER_PATH:   "/Chavez Management Team Folder/CM- Signage"
+  REFRESH_TOKEN: "PASTE_REFRESH_TOKEN_HERE",
+  FOLDER_PATH:   "/Chavez Management Team Folder/CM- Signage",
+  // Dropbox Business/Team account: files live in the team space, not the
+  // personal space. This is the team's root namespace ID. The page also
+  // auto-detects it on load, so this is just a fallback.
+  ROOT_NS_ID:    "14182341027"
 };
 
 /* =================================================================
@@ -341,11 +345,34 @@ async function dbxAccessToken(){
   return d.access_token;
 }
 
-async function dbxNewestImage(accessToken){
-  // List folder contents
+/* On a Business/Team account the files live in the team's root namespace.
+   Ask Dropbox for this account's root namespace; fall back to the configured
+   ID. We send this as a Dropbox-API-Path-Root header on file calls so paths
+   like /Chavez Management Team Folder/... resolve in the team space. */
+let _rootNs = null;
+async function dbxRootNamespace(accessToken){
+  if(_rootNs) return _rootNs;
+  try{
+    const r = await fetch("https://api.dropboxapi.com/2/users/get_current_account", {
+      method:"POST", headers:{ "Authorization":"Bearer "+accessToken }
+    });
+    if(r.ok){
+      const j = await r.json();
+      if(j.root_info && j.root_info.root_namespace_id){ _rootNs = String(j.root_info.root_namespace_id); }
+    }
+  }catch(e){ /* fall through to configured id */ }
+  if(!_rootNs && DROPBOX.ROOT_NS_ID){ _rootNs = String(DROPBOX.ROOT_NS_ID); }
+  return _rootNs;
+}
+function pathRootHeader(ns){
+  return ns ? { "Dropbox-API-Path-Root": JSON.stringify({ ".tag":"root", "root": ns }) } : {};
+}
+
+async function dbxNewestImage(accessToken, ns){
+  // List folder contents (in the team root namespace)
   const r = await fetch("https://api.dropboxapi.com/2/files/list_folder", {
     method:"POST",
-    headers:{ "Authorization":"Bearer "+accessToken, "Content-Type":"application/json" },
+    headers:{ "Authorization":"Bearer "+accessToken, "Content-Type":"application/json", ...pathRootHeader(ns) },
     body: JSON.stringify({ path: DROPBOX.FOLDER_PATH, recursive:false, limit:200 })
   });
   if(!r.ok){ const t=await r.text(); throw new Error("list "+r.status+" "+t); }
@@ -359,11 +386,12 @@ async function dbxNewestImage(accessToken){
   return imgs[0];
 }
 
-async function dbxDownload(accessToken, pathLower){
+async function dbxDownload(accessToken, pathLower, ns){
   const r = await fetch("https://content.dropboxapi.com/2/files/download", {
     method:"POST",
     headers:{
       "Authorization":"Bearer "+accessToken,
+      ...pathRootHeader(ns),
       "Dropbox-API-Arg": JSON.stringify({ path: pathLower })
     }
   });
@@ -377,9 +405,10 @@ async function loadBoardImage(){
     if(DROPBOX.APP_KEY.startsWith("PASTE_")){ boardMsg("Add your Dropbox keys in the code to show the directory."); return; }
     boardMsg("Loading directory…");
     const token = await dbxAccessToken();
-    const newest = await dbxNewestImage(token);
+    const ns = await dbxRootNamespace(token);
+    const newest = await dbxNewestImage(token, ns);
     if(!newest){ boardMsg("No image found in the Dropbox folder yet. Drop a JPEG in and reload."); return; }
-    const blob = await dbxDownload(token, newest.path_lower);
+    const blob = await dbxDownload(token, newest.path_lower, ns);
     const url = URL.createObjectURL(blob);
     imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); };
     imgEl.onerror = ()=>{ boardMsg("Image could not be displayed."); };
