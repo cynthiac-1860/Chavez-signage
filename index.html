@@ -12,13 +12,15 @@
 <!--  BURLINGAME MEDICAL CENTER DIGITAL DIRECTORY  (portrait)        -->
 <!--  Managed by Chavez Management Group, Inc.                       -->
 <!--                                                                 -->
-<!--  UPDATE TENANTS PERMANENTLY (every screen):                     -->
-<!--    Edit PUBLISHED_DIRECTORY below, commit to GitHub. The board  -->
-<!--    reloads itself periodically and picks up the change.         -->
-<!--  QUICK UPDATE ON ONE SCREEN:                                    -->
-<!--    Move the mouse, click the gear (bottom-right), edit, Save.   -->
+<!--  THE DIRECTORY IS A DROPBOX IMAGE:                              -->
+<!--    Drop a new JPEG (1000x2000) into the Dropbox folder. The     -->
+<!--    board pulls the NEWEST image automatically on each reload    -->
+<!--    (it reloads itself every 30 min, or refresh the screen).     -->
+<!--    Set your Dropbox keys in the DROPBOX block in the script.    -->
 <!--                                                                 -->
-<!--  The tenant list auto-scales so nothing is ever cut off.        -->
+<!--  EDIT HEADER/FOOTER TEXT:                                       -->
+<!--    Move the mouse, click the gear (bottom-right), edit, Save.   -->
+<!--    For all screens: Copy code -> paste PUBLISHED_BUILDING block.-->
 <!-- ============================================================= -->
 
 <style>
@@ -123,52 +125,31 @@
   .status-pill.open{ color:#bfe6cf; } .status-pill.open .dot{ background:#54c98a; box-shadow:0 0 0 4px rgba(84,201,138,.18); }
   .status-pill.closed .dot{ background:#d08a73; }
 
-  /* ---------- DIRECTORY ---------- */
-  .dir-area{ position:relative; overflow:hidden; display:flex; justify-content:center; }
-  .directory{
-    width:100%;
-    display:grid; grid-template-columns:1fr 1fr;
-    gap:clamp(14px,1.6vw,26px) clamp(16px,1.8vw,28px);
-    align-content:start;
-    transform-origin:top center;
+  /* ---------- DIRECTORY IMAGE BOARD ---------- */
+  .dir-area{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .board{
+    position:relative;
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
   }
-  .section{
-    background:var(--surface);
+  .board img{
+    max-width:100%; max-height:100%;
+    width:auto; height:auto;
+    object-fit:contain;
+    border-radius:14px;
     border:1px solid var(--border);
-    border-radius:14px; overflow:hidden;
-    backdrop-filter:blur(6px);
+    background:var(--surface);
+    box-shadow:0 12px 50px rgba(0,0,0,.35);
+    opacity:0; transition:opacity .5s ease;
   }
-  .section-head{
-    display:flex; align-items:center; gap:.7em;
-    font-family:"Jost",sans-serif; font-weight:500;
-    letter-spacing:.16em; text-indent:.04em; text-transform:uppercase;
-    font-size:clamp(13px,1.55vw,20px); color:var(--text);
-    padding:clamp(11px,1.5vh,17px) clamp(15px,1.4vw,22px);
-    border-bottom:1px solid var(--border);
+  .board img.loaded{ opacity:1; }
+  .board-msg{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-family:"Jost",sans-serif; letter-spacing:.05em;
+    color:var(--muted); font-size:clamp(15px,1.8vw,22px); text-align:center;
+    padding:0 20px;
   }
-  .section-head::before{
-    content:""; width:.5em; height:1.25em; border-radius:3px; flex:none;
-    background:var(--accent, var(--gold)); box-shadow:0 0 14px var(--glow, rgba(201,162,76,.5));
-  }
-  .section.navy{  --accent:var(--gold);  --glow:rgba(201,162,76,.5); }
-  .section.slate{ --accent:var(--slate); --glow:rgba(127,160,194,.5); }
-  .section.sage{  --accent:var(--sage);  --glow:rgba(146,180,160,.5); }
-
-  .entry{
-    display:flex; align-items:center; gap:clamp(10px,1vw,18px);
-    padding:clamp(9px,1.25vh,15px) clamp(15px,1.4vw,22px);
-    border-top:1px solid rgba(255,255,255,.055);
-  }
-  .entry:first-of-type{ border-top:none; }
-  .entry .name{ flex:1; font-size:clamp(13px,1.45vw,19px); line-height:1.3; color:#E2EAF3; font-weight:500; }
-  .entry .suite{
-    font-family:"Jost",sans-serif; font-weight:600;
-    font-size:clamp(17px,1.95vw,28px); color:#fff; letter-spacing:.01em; white-space:nowrap;
-    min-width:1.6em; text-align:right;
-  }
-  .section.navy  .entry .suite{ color:var(--gold); }
-  .section.slate .entry .suite{ color:#A9C4E0; }
-  .section.sage  .entry .suite{ color:#B6D3C2; }
+  .board-msg.hide{ display:none; }
 
   /* ---------- FOOTER ---------- */
   footer{
@@ -219,6 +200,9 @@
   .ed-entry .del, .ed-section-head .del{ border:none; background:#F4E7E2; color:#b4543c; width:34px; height:38px; border-radius:7px; cursor:pointer; flex:none; font-size:16px; }
   .editor input, .editor textarea{ border:1px solid #D9D3C6; border-radius:7px; padding:8px 10px; font-size:13.5px; color:#18222F; background:#fff; }
   .editor input:focus, .editor textarea:focus{ outline:2px solid #7FA0C2; border-color:#7FA0C2; }
+  .ed-field{ display:block; margin-bottom:14px; }
+  .ed-field span{ display:block; font-size:12.5px; font-weight:600; color:#3a4655; margin-bottom:5px; }
+  .ed-field input{ width:100%; }
   .add-entry, .add-section{ border:1px dashed #C7BFAE; background:#fff; color:#5C7286; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px; font-weight:600; }
   .add-section{ width:100%; margin-top:4px; }
   .editor-actions{ border-top:1px solid #ECE7DC; padding:14px 22px; display:flex; flex-wrap:wrap; gap:10px; }
@@ -261,7 +245,10 @@
     </div>
 
     <main class="dir-area" id="dirArea">
-      <div class="directory" id="directory"></div>
+      <div class="board" id="board">
+        <img id="boardImg" alt="Directory" />
+        <div class="board-msg" id="boardMsg">Loading directory…</div>
+      </div>
     </main>
 
     <footer>
@@ -276,12 +263,12 @@
 
   <div class="editor-overlay" id="editorOverlay">
     <div class="editor">
-      <div class="editor-top"><h2>Edit directory</h2><button class="x" id="editorClose" aria-label="Close">✕</button></div>
-      <div class="editor-hint"><b>Save to this screen</b> updates this device only. To change <b>every</b> screen, click <b>Copy directory code</b> and paste it into your GitHub <code>index.html</code> (replace the <code>PUBLISHED_DIRECTORY</code> block), then commit.</div>
+      <div class="editor-top"><h2>Edit board</h2><button class="x" id="editorClose" aria-label="Close">✕</button></div>
+      <div class="editor-hint"><b>Save to this screen</b> updates this device only. To change <b>every</b> screen, click <b>Copy code</b> and paste it into your GitHub <code>index.html</code> (replace the <code>PUBLISHED_BUILDING</code> block), then commit. The directory image itself is managed in Dropbox — just drop a new JPEG in the folder and reload.</div>
       <div class="editor-body" id="editorBody"></div>
       <div class="editor-actions">
         <button class="btn btn-primary" id="saveLocal">Save to this screen</button>
-        <button class="btn btn-ghost" id="copyCode">Copy directory code</button>
+        <button class="btn btn-ghost" id="copyCode">Copy code</button>
         <button class="btn btn-ghost danger" id="resetLocal">Reset to published</button>
       </div>
     </div>
@@ -290,96 +277,118 @@
 
 <script>
 /* =================================================================
-   PUBLISHED DIRECTORY  —  edit here, then commit to GitHub.
-   tone: "navy" (gold accent) | "slate" (blue) | "sage" (green)
+   DROPBOX SETTINGS  —  paste your three values between the quotes.
+   These let the board pull the newest JPEG from your Dropbox folder.
+   Get them from your Dropbox app at dropbox.com/developers/apps.
    ================================================================= */
-const PUBLISHED_DIRECTORY = {
-  building: { welcome:"Welcome to", name1:"Burlingame", name2:"Medical Center", address:"1860 El Camino Real, Burlingame" },
-  sections: [
-    { title:"Basement", tone:"navy", entries:[
-      { suite:"50",  name:"Bello Allergy and Wellness Center – Dr. Yan Allergist (Lower Level)" },
-      { suite:"55",  name:"Express Rehab / Crown & Wink / Dr. Yan Yan, MD Allergist (Lower Level)" }
-    ]},
-    { title:"1st Floor", tone:"slate", entries:[
-      { suite:"100", name:"Upward Credit Union" },
-      { suite:"101", name:"Unio Specialty Care | Gastroenterology — Mark Tsuchiyose, MD | Rowena…" },
-      { suite:"105", name:"Dr. Nabeel Madanat M.D., F.A.A.P. – Pediatrics" },
-      { suite:"108", name:"A&O Peninsula Pharmacy" }
-    ]},
-    { title:"2nd Floor", tone:"sage", entries:[
-      { suite:"200", name:"Dr. Simon Lee, MD FACP — Internal Medicine, Immigration Exam / Simon…" },
-      { suite:"201", name:"Select Physical Therapy" },
-      { suite:"207", name:"Ambus, Peggy, D.D.S. / Bahlinger, Michael, D.D.S." },
-      { suite:"221", name:"Sha & Company" },
-      { suite:"228", name:"William Chau, M.S., D.C., N.M.D. – Alternative Nature Medicine" },
-      { suite:"236", name:"WOWME Beauty" },
-      { suite:"250", name:"Mindful Health Solutions" }
-    ]},
-    { title:"3rd Floor", tone:"navy", entries:[
-      { suite:"301", name:"Glatt, Daniel, M.D. / Novales, Susan, ANP-C / The Coleman Institute" },
-      { suite:"304", name:"Precision Hearing" },
-      { suite:"305", name:"Nest Dental" },
-      { suite:"310", name:"Jain, Rashmi MD / Kao, Albert MD / Tseng, Robert MD / Angeli, Daniel MD" },
-      { suite:"321", name:"Batlin, Andra, M.D. / Lakowsky, Alexander, M.D., M.B.A." }
-    ]},
-    { title:"4th Floor", tone:"sage", entries:[
-      { suite:"406",  name:"RTS: A Center for Healing and Violence Prevention" },
-      { suite:"420",  name:"BMC" },
-      { suite:"428",  name:"Hong, Hoyland, M.D." },
-      { suite:"438",  name:"Korody Business Services" },
-      { suite:"438A", name:"Levenson & Zieman – Attorneys At Law" },
-      { suite:"439",  name:"Burlingame Pacifica Medical Group, Inc." }
-    ]},
-    { title:"Penthouse", tone:"navy", entries:[
-      { suite:"500", name:"Chavez Management Group, Inc." }
-    ]}
-  ]
+const DROPBOX = {
+  APP_KEY:       "eghloosdqywnvyo",
+  APP_SECRET:    "Ppi9ptb2f5ezpwca",
+  REFRESH_TOKEN: "awSEyUAEAb8AAAAAAAAAATGW8Vae3UzCHPFcAXonrnlzIHTL3fPGJP8u0AzPbDza",
+  FOLDER_PATH:   "/Chavez Management Team Folder/CM- Signage"
+};
+
+/* =================================================================
+   PUBLISHED BUILDING INFO  —  edit here, then commit to GitHub.
+   (Header text + footer. The directory itself is the Dropbox image.)
+   ================================================================= */
+const PUBLISHED_BUILDING = {
+  welcome:"Welcome to",
+  name1:"Burlingame",
+  name2:"Medical Center",
+  address:"1860 El Camino Real, Burlingame"
 };
 
 const OFFICE = { openHour:9, closeHour:17, days:[1,2,3,4,5] };
-const STORAGE_KEY = "bmc_directory_override_v2";
+const STORAGE_KEY = "bmc_building_override_v1";
 
 function loadOverride(){ try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
 function saveOverride(d){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); return true; }catch(e){ return false; } }
 function clearOverride(){ try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} }
-function currentData(){ const o=loadOverride(); return (o&&o.sections)?o:PUBLISHED_DIRECTORY; }
+function currentData(){ const o=loadOverride(); return (o&&o.name1!==undefined)?o:PUBLISHED_BUILDING; }
 function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
 function render(){
-  const data = currentData();
-  const b = data.building || PUBLISHED_DIRECTORY.building;
+  const b = currentData();
   document.getElementById("welcome").textContent = b.welcome || "Welcome to";
   document.getElementById("name1").textContent   = b.name1 || "";
   document.getElementById("name2").textContent   = b.name2 || "";
   document.getElementById("address").textContent = b.address || "";
   document.title = [b.name1,b.name2].filter(Boolean).join(" ") + " — Directory";
-
-  const dir = document.getElementById("directory");
-  dir.innerHTML = (data.sections||[]).map(sec=>{
-    const tone = ["navy","slate","sage"].includes(sec.tone) ? sec.tone : "navy";
-    const rows = (sec.entries||[]).map(e=>`
-      <div class="entry"><div class="name">${escapeHtml(e.name||"")}</div><div class="suite">${escapeHtml(e.suite||"")}</div></div>`).join("");
-    return `<div class="section ${tone}"><div class="section-head">${escapeHtml(sec.title||"")}</div>${rows}</div>`;
-  }).join("");
-  requestAnimationFrame(fitDirectory);
 }
 
-/* ---- auto-fit: scale the list so every tenant always shows ---- */
-function fitDirectory(){
-  const area = document.getElementById("dirArea");
-  const grid = document.getElementById("directory");
-  grid.style.transform = "none";
-  const avail = area.clientHeight, needed = grid.scrollHeight;
-  if(!avail || !needed) return;
-  const s = needed > avail ? (avail / needed) : 1;   // no minimum — always fit every tenant
-  grid.style.transform = s < 1 ? `scale(${s})` : "none";
+/* =================================================================
+   DROPBOX IMAGE LOADER
+   1. Use the refresh token to get a short-lived access token.
+   2. List the folder, pick the newest image file.
+   3. Download it and show it in the board.
+   Runs once on page load. (Board reloads itself every 30 min below.)
+   ================================================================= */
+function boardMsg(text){ const m=document.getElementById("boardMsg"); m.textContent=text; m.classList.remove("hide"); }
+function boardHideMsg(){ document.getElementById("boardMsg").classList.add("hide"); }
+
+async function dbxAccessToken(){
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: DROPBOX.REFRESH_TOKEN,
+    client_id: DROPBOX.APP_KEY,
+    client_secret: DROPBOX.APP_SECRET
+  });
+  const r = await fetch("https://api.dropbox.com/oauth2/token", { method:"POST", body });
+  if(!r.ok) throw new Error("token "+r.status);
+  const d = await r.json();
+  return d.access_token;
 }
-window.addEventListener("resize", ()=>requestAnimationFrame(fitDirectory));
-window.addEventListener("load", ()=>requestAnimationFrame(fitDirectory));
-setTimeout(fitDirectory, 300);
-if(window.ResizeObserver){ new ResizeObserver(()=>requestAnimationFrame(fitDirectory)).observe(document.getElementById("dirArea")); }
-if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>requestAnimationFrame(fitDirectory)); }
+
+async function dbxNewestImage(accessToken){
+  // List folder contents
+  const r = await fetch("https://api.dropboxapi.com/2/files/list_folder", {
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+accessToken, "Content-Type":"application/json" },
+    body: JSON.stringify({ path: DROPBOX.FOLDER_PATH, recursive:false, limit:200 })
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error("list "+r.status+" "+t); }
+  const d = await r.json();
+  const imgs = (d.entries||[]).filter(e =>
+    e[".tag"]==="file" && /\.(jpe?g|png|webp)$/i.test(e.name)
+  );
+  if(!imgs.length) return null;
+  // Newest by server_modified
+  imgs.sort((a,b)=> new Date(b.server_modified) - new Date(a.server_modified));
+  return imgs[0];
+}
+
+async function dbxDownload(accessToken, pathLower){
+  const r = await fetch("https://content.dropboxapi.com/2/files/download", {
+    method:"POST",
+    headers:{
+      "Authorization":"Bearer "+accessToken,
+      "Dropbox-API-Arg": JSON.stringify({ path: pathLower })
+    }
+  });
+  if(!r.ok) throw new Error("download "+r.status);
+  return await r.blob();
+}
+
+async function loadBoardImage(){
+  const imgEl = document.getElementById("boardImg");
+  try{
+    if(DROPBOX.APP_KEY.startsWith("PASTE_")){ boardMsg("Add your Dropbox keys in the code to show the directory."); return; }
+    boardMsg("Loading directory…");
+    const token = await dbxAccessToken();
+    const newest = await dbxNewestImage(token);
+    if(!newest){ boardMsg("No image found in the Dropbox folder yet. Drop a JPEG in and reload."); return; }
+    const blob = await dbxDownload(token, newest.path_lower);
+    const url = URL.createObjectURL(blob);
+    imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); };
+    imgEl.onerror = ()=>{ boardMsg("Image could not be displayed."); };
+    imgEl.src = url;
+  }catch(e){
+    boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload.");
+    console.error("Dropbox board error:", e);
+  }
+}
 
 /* ---------- clock + greeting + status ---------- */
 const TZ = "America/Los_Angeles";
@@ -424,46 +433,32 @@ async function loadWeather(){
   }catch(e){ document.getElementById("wxCond").textContent="Weather unavailable"; }
 }
 
-/* ============================ EDITOR ============================ */
+/* ============================ EDITOR (building info) ============================ */
 let draft=null;
 const overlay=document.getElementById("editorOverlay");
 const edBody=document.getElementById("editorBody");
 function openEditor(){ draft=deepClone(currentData()); renderEditor(); overlay.classList.add("show"); }
 function closeEditor(){ overlay.classList.remove("show"); }
+function field(label,key){
+  return `<label class="ed-field"><span>${label}</span><input data-k="${key}" value="${escapeHtml(draft[key]||'')}" /></label>`;
+}
 function renderEditor(){
-  edBody.innerHTML=(draft.sections||[]).map((sec,si)=>{
-    const tones=["navy","slate","sage"].map(t=>`<span class="tone-swatch tone-${t} ${sec.tone===t?'sel':''}" data-si="${si}" data-tone="${t}" title="${t}"></span>`).join("");
-    const entries=(sec.entries||[]).map((e,ei)=>`
-      <div class="ed-entry">
-        <input class="suite" data-si="${si}" data-ei="${ei}" data-f="suite" value="${escapeHtml(e.suite||'')}" placeholder="#" />
-        <textarea class="name" data-si="${si}" data-ei="${ei}" data-f="name" placeholder="Tenant name">${escapeHtml(e.name||'')}</textarea>
-        <button class="del" data-si="${si}" data-ei="${ei}" title="Remove">✕</button>
-      </div>`).join("");
-    return `<div class="ed-section"><div class="ed-section-head">${tones}<input class="sec-name" data-si="${si}" data-f="title" value="${escapeHtml(sec.title||'')}" /><button class="del" data-si="${si}" data-secdel="1" title="Remove floor">✕</button></div><div class="ed-entries">${entries}<button class="add-entry" data-si="${si}">+ Add tenant</button></div></div>`;
-  }).join("")+`<button class="add-section" id="addSection">+ Add floor / section</button>`;
+  edBody.innerHTML =
+    field("Eyebrow (small top line)","welcome") +
+    field("Name — line 1","name1") +
+    field("Name — line 2","name2") +
+    field("Address","address");
 }
 edBody.addEventListener("input", e=>{
-  const t=e.target, si=+t.dataset.si;
-  if(t.dataset.secdel) return;
-  if(t.classList.contains("sec-name")){ draft.sections[si].title=t.value; return; }
-  if(t.dataset.f && t.dataset.ei!==undefined && t.dataset.ei!==""){ draft.sections[si].entries[+t.dataset.ei][t.dataset.f]=t.value; }
-});
-edBody.addEventListener("click", e=>{
-  const t=e.target.closest("[data-si],#addSection"); if(!t) return;
-  if(t.id==="addSection"){ draft.sections.push({title:"New Floor",tone:"slate",entries:[{suite:"",name:""}]}); renderEditor(); return; }
-  const si=+t.dataset.si;
-  if(t.classList.contains("tone-swatch")){ draft.sections[si].tone=t.dataset.tone; renderEditor(); return; }
-  if(t.dataset.secdel){ draft.sections.splice(si,1); renderEditor(); return; }
-  if(t.classList.contains("add-entry")){ draft.sections[si].entries.push({suite:"",name:""}); renderEditor(); return; }
-  if(t.classList.contains("del") && t.dataset.ei!==undefined){ draft.sections[si].entries.splice(+t.dataset.ei,1); renderEditor(); return; }
+  const k=e.target.dataset.k; if(k){ draft[k]=e.target.value; }
 });
 function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2200); }
 document.getElementById("saveLocal").addEventListener("click", ()=>{ if(saveOverride(draft)){ render(); toast("Saved to this screen"); closeEditor(); } else toast("Couldn't save on this device"); });
-document.getElementById("resetLocal").addEventListener("click", ()=>{ clearOverride(); draft=deepClone(PUBLISHED_DIRECTORY); renderEditor(); render(); toast("Reset to the published version"); });
+document.getElementById("resetLocal").addEventListener("click", ()=>{ clearOverride(); draft=deepClone(PUBLISHED_BUILDING); renderEditor(); render(); toast("Reset to the published version"); });
 document.getElementById("copyCode").addEventListener("click", async ()=>{
-  const code="const PUBLISHED_DIRECTORY = "+JSON.stringify(draft,null,2)+";";
-  try{ await navigator.clipboard.writeText(code); toast("Directory code copied — paste into GitHub"); }
-  catch(e){ const ta=document.createElement("textarea"); ta.value=code; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Directory code copied"); }catch(_){ toast("Copy failed — select manually"); } document.body.removeChild(ta); }
+  const code="const PUBLISHED_BUILDING = "+JSON.stringify(draft,null,2)+";";
+  try{ await navigator.clipboard.writeText(code); toast("Code copied — paste into GitHub"); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=code; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Code copied"); }catch(_){ toast("Copy failed — select manually"); } document.body.removeChild(ta); }
 });
 document.getElementById("gear").addEventListener("click", openEditor);
 document.getElementById("editorClose").addEventListener("click", closeEditor);
@@ -477,6 +472,7 @@ function wake(){ document.body.classList.add("show-cursor"); clearTimeout(idleTi
 
 /* ---------- boot ---------- */
 render();
+loadBoardImage();
 tick(); setInterval(tick,1000);
 loadWeather(); setInterval(loadWeather,10*60*1000);
 setInterval(()=>{ if(!overlay.classList.contains("show")) location.reload(); }, 30*60*1000);
