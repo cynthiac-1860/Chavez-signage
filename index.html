@@ -464,7 +464,7 @@ async function loadBoardImage(isRefresh){
   }catch(e){
     // On silent refresh, keep showing the current image rather than an error
     if(!isRefresh){ boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload."); }
-    console.error("Dropbox board error:", e);
+    console.log("PORTRAIT CSS:", !!document.querySelector('style') && document.documentElement.outerHTML.includes('max-aspect-ratio'));
   }
 }
 
