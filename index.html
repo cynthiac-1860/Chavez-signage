@@ -57,9 +57,9 @@
   .stage{
     height:100vh; width:100vw;
     display:grid;
-    grid-template-rows:auto auto 2.4fr auto;
+    grid-template-rows:auto auto 1fr auto;
     gap:clamp(14px,1.6vh,30px);
-    padding:clamp(14px,1.8vh,28px) clamp(26px,4vw,64px) clamp(14px,1.8vh,28px);
+    padding:clamp(26px,3.4vh,60px) clamp(26px,4vw,64px) clamp(20px,2.4vh,40px);
   }
 
   /* ---------- HEADER ---------- */
@@ -73,8 +73,8 @@
     font-family:"Jost",sans-serif; font-weight:300;
     text-transform:uppercase; line-height:.95; margin:.2em 0 0; color:#fff;
   }
-  .title .l1{ display:block; font-size:clamp(30px,5vw,60px); letter-spacing:.16em; text-indent:.16em; }
-  .title .l2{ display:block; font-size:clamp(14px,2.4vw,30px); letter-spacing:.34em; text-indent:.34em; margin-top:.1em; color:#D9E2EC; }
+  .title .l1{ display:block; font-size:clamp(40px,8.4vw,104px); letter-spacing:.16em; text-indent:.16em; }
+  .title .l2{ display:block; font-size:clamp(20px,4.3vw,54px); letter-spacing:.34em; text-indent:.34em; margin-top:.1em; color:#D9E2EC; }
   .rule{
     width:clamp(150px,30vw,360px); height:1.5px; margin:clamp(12px,1.6vh,22px) auto clamp(9px,1.1vh,15px);
     background:linear-gradient(90deg, transparent, var(--gold), transparent);
@@ -89,13 +89,13 @@
     background:var(--surface);
     border:1px solid var(--border);
     border-radius:18px;
-    padding:clamp(10px,1.4vh,18px) clamp(20px,3vw,44px);
+    padding:clamp(16px,2vh,30px) clamp(20px,3vw,44px);
     backdrop-filter:blur(8px);
     text-align:center;
   }
   .clock .time{
     font-family:"Jost",sans-serif; font-weight:300;
-    font-size:clamp(28px,3.5vw,46px); line-height:1; color:#fff;
+    font-size:clamp(48px,11vw,128px); line-height:1; color:#fff;
     letter-spacing:.01em; font-variant-numeric:tabular-nums;
     text-shadow:0 0 38px rgba(201,162,76,.22);
   }
@@ -214,6 +214,38 @@
   @media (min-aspect-ratio:1/1){
     .directory{ grid-template-columns:repeat(3,1fr); }
   }
+
+  /* ===========================================================
+     PORTRAIT SCREENS (TV mounted vertically, e.g. 2160x3840)
+     Tall layout: header + clock on top, big tall image below.
+     Sizes use vh so they scale with the screen's height.
+     =========================================================== */
+  @media (max-aspect-ratio:1/1){
+    .stage{
+      grid-template-rows:auto auto 1fr auto;
+      gap:2vh;
+      padding:3vh 4vw 2.5vh;
+    }
+    .eyebrow{ font-size:1.7vh; letter-spacing:.5em; }
+    .title .l1{ font-size:6.4vh; }
+    .title .l2{ font-size:3.1vh; }
+    .rule{ width:34vw; margin:1.6vh auto 1vh; }
+    .address{ font-size:2.3vh; }
+
+    .live{ padding:2vh 4vw; border-radius:2vh; }
+    .clock .time{ font-size:8.2vh; }
+    .clock .time .ampm{ font-size:.3em; }
+    .clock .cdate{ font-size:2.2vh; margin-top:.3em; }
+    .live-row{ margin-top:1.8vh; padding-top:1.8vh; gap:2vw; }
+    .weather svg{ width:5vh; height:5vh; }
+    .wx-temp{ font-size:4vh; }
+    .wx-meta{ font-size:1.7vh; }
+    .status-pill{ font-size:1.7vh; padding:.7em 1.2em; }
+
+    /* The directory image gets the big tall lower area */
+    .board img{ object-fit:cover; border-radius:1.6vh; }
+  }
+
   @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
 </style>
 </head>
@@ -283,7 +315,7 @@
 const DROPBOX = {
   APP_KEY:       "eghloosdqywnvyo",
   APP_SECRET:    "pi9ptb2f5ezpwca",
-  REFRESH_TOKEN: "V9HZpn1DvkoAAAAAAAAAAUIStnAB94zDA7s3oXT83oG70CSjPC563Nnj-Jk0hHzs",
+  REFRESH_TOKEN: "ZWBQJ72SpogAAAAAAAAAAf4U8T23y5hrbp_ORBYRBI35VyBH-sio8-mlKd3PCN9x",
   FOLDER_PATH:   "/Chavez Management Team Folder/CM- Signage",
   // Dropbox Business/Team account: files live in the team space, not the
   // personal space. This is the team's root namespace ID. The page also
@@ -398,22 +430,40 @@ async function dbxDownload(accessToken, pathLower, ns){
   return await r.blob();
 }
 
-async function loadBoardImage(){
+let _currentRev = null;   // rev/id of the image currently shown
+async function loadBoardImage(isRefresh){
   const imgEl = document.getElementById("boardImg");
   try{
     if(DROPBOX.APP_KEY.startsWith("PASTE_")){ boardMsg("Add your Dropbox keys in the code to show the directory."); return; }
-    boardMsg("Loading directory…");
+    if(!isRefresh){ boardMsg("Loading directory…"); }
     const token = await dbxAccessToken();
     const ns = await dbxRootNamespace(token);
     const newest = await dbxNewestImage(token, ns);
-    if(!newest){ boardMsg("No image found in the Dropbox folder yet. Drop a JPEG in and reload."); return; }
+    if(!newest){
+      // Only show the empty message on first load, not on silent refreshes
+      if(!isRefresh){ boardMsg("No image found in the Dropbox folder yet. Drop a JPEG in and reload."); }
+      return;
+    }
+    // If the newest file hasn't changed, do nothing (no flicker, no re-download)
+    const rev = newest.rev || newest.content_hash || newest.id;
+    if(isRefresh && rev === _currentRev) return;
     const blob = await dbxDownload(token, newest.path_lower, ns);
     const url = URL.createObjectURL(blob);
-    imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); };
-    imgEl.onerror = ()=>{ boardMsg("Image could not be displayed."); };
-    imgEl.src = url;
+    if(isRefresh && imgEl.classList.contains("loaded")){
+      // gentle cross-fade: dim, swap, fade back in
+      imgEl.classList.remove("loaded");
+      setTimeout(()=>{
+        imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); _currentRev = rev; URL.revokeObjectURL(url); };
+        imgEl.src = url;
+      }, 260);
+    }else{
+      imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); _currentRev = rev; URL.revokeObjectURL(url); };
+      imgEl.onerror = ()=>{ if(!isRefresh) boardMsg("Image could not be displayed."); };
+      imgEl.src = url;
+    }
   }catch(e){
-    boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload.");
+    // On silent refresh, keep showing the current image rather than an error
+    if(!isRefresh){ boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload."); }
     console.error("Dropbox board error:", e);
   }
 }
@@ -503,7 +553,15 @@ render();
 loadBoardImage();
 tick(); setInterval(tick,1000);
 loadWeather(); setInterval(loadWeather,10*60*1000);
-setInterval(()=>{ if(!overlay.classList.contains("show")) location.reload(); }, 30*60*1000);
+
+/* Silently check the Dropbox folder every 2 minutes. The image only swaps
+   if a newer file appears — otherwise nothing happens (no flicker). The
+   clock and weather keep running; the page never does a full reload here. */
+setInterval(()=>{ loadBoardImage(true); }, 2*60*1000);
+
+/* Once a day, do a full reload in the small hours so any code/font updates
+   are picked up. Skipped if the editor is open. */
+setInterval(()=>{ if(!overlay.classList.contains("show")) location.reload(); }, 24*60*60*1000);
 </script>
 </body>
 </html>
