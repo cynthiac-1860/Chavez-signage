@@ -93,14 +93,27 @@
     backdrop-filter:blur(8px);
     text-align:center;
   }
+  /* one horizontal row: weather (left) · time (center) · status (right) */
+  .live-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:clamp(14px,2vw,30px);
+  }
+  .live-bar .weather{ flex:1; justify-content:flex-start; }
+  .live-bar .clock{ flex:0 0 auto; }
+  .live-bar .status-pill{ flex:1 0 auto; justify-content:flex-end; background:transparent; border:none; padding:0; }
+  .live-bar .status-pill .pill-inner{
+    display:inline-flex; align-items:center; gap:.6em; white-space:nowrap;
+    background:rgba(255,255,255,.05); border:1px solid var(--border);
+    padding:.6em 1.15em; border-radius:999px;
+  }
   .clock .time{
     font-family:"Jost",sans-serif; font-weight:300;
-    font-size:clamp(48px,11vw,128px); line-height:1; color:#fff;
+    font-size:clamp(40px,8vw,96px); line-height:1; color:#fff;
     letter-spacing:.01em; font-variant-numeric:tabular-nums;
-    text-shadow:0 0 38px rgba(201,162,76,.22);
+    text-shadow:0 0 38px rgba(201,162,76,.22); white-space:nowrap;
   }
   .clock .time .ampm{ font-size:.3em; color:var(--gold); letter-spacing:.14em; margin-left:.3em; font-weight:400; }
-  .clock .cdate{ margin-top:.35em; font-size:clamp(14px,2vw,24px); color:var(--muted); letter-spacing:.03em; }
+  .clock .cdate{ margin-top:.35em; font-size:clamp(13px,1.7vw,22px); color:var(--muted); letter-spacing:.03em; white-space:nowrap; }
   .clock .cdate b{ color:var(--text); font-weight:600; }
 
   .live-row{
@@ -110,14 +123,14 @@
     border-top:1px solid var(--border);
   }
   .weather{ display:flex; align-items:center; gap:clamp(8px,1vw,16px); }
-  .weather svg{ width:clamp(34px,4vw,56px); height:clamp(34px,4vw,56px); flex:none; }
-  .wx-temp{ font-family:"Jost",sans-serif; font-weight:400; font-size:clamp(26px,3.4vw,46px); color:#fff; line-height:1; }
-  .wx-meta{ text-align:left; font-size:clamp(12px,1.5vw,18px); color:var(--muted); line-height:1.25; }
+  .weather svg{ width:clamp(30px,3.4vw,48px); height:clamp(30px,3.4vw,48px); flex:none; }
+  .wx-temp{ font-family:"Jost",sans-serif; font-weight:400; font-size:clamp(22px,2.8vw,38px); color:#fff; line-height:1; }
+  .wx-meta{ text-align:left; font-size:clamp(11px,1.3vw,16px); color:var(--muted); line-height:1.25; }
   .wx-meta b{ color:var(--text); font-weight:600; }
 
   .status-pill{
     display:inline-flex; align-items:center; gap:.6em; white-space:nowrap;
-    font-size:clamp(12px,1.5vw,18px); font-weight:600; letter-spacing:.02em;
+    font-size:clamp(11px,1.3vw,16px); font-weight:600; letter-spacing:.02em;
     color:var(--muted); background:rgba(255,255,255,.05);
     border:1px solid var(--border); padding:.6em 1.15em; border-radius:999px;
   }
@@ -232,13 +245,13 @@
     .rule{ width:28vw; margin:1vh auto .7vh; }
     .address{ font-size:1.9vh; }
 
-     .live{ padding:1.2vh 4vw; border-radius:1.6vh; }
-    .clock .time{ font-size:4.6vh; }
+    .live{ padding:1.6vh 4vw; border-radius:1.6vh; }
+    .live-bar{ gap:2vw; }
+    .clock .time{ font-size:4.4vh; }
     .clock .time .ampm{ font-size:.3em; }
-    .clock .cdate{ font-size:1.5vh; margin-top:.25em; }
-    .live-row{ margin-top:1vh; padding-top:1vh; gap:2vw; }
-    .weather svg{ width:3.2vh; height:3.2vh; }
-    .wx-temp{ font-size:2.6vh; }
+    .clock .cdate{ font-size:1.4vh; margin-top:.25em; }
+    .weather svg{ width:3vh; height:3vh; }
+    .wx-temp{ font-size:2.4vh; }
     .wx-meta{ font-size:1.2vh; }
     .status-pill{ font-size:1.2vh; padding:.55em 1em; }
 
@@ -259,11 +272,7 @@
     </header>
 
     <div class="live">
-      <div class="clock">
-        <div class="time" id="time">--:--</div>
-        <div class="cdate"><b id="greeting">Welcome</b> · <span id="date">—</span></div>
-      </div>
-      <div class="live-row">
+      <div class="live-bar">
         <div class="weather" id="weather">
           <svg viewBox="0 0 24 24" fill="none" stroke="#9DB0C4" stroke-width="1.6"><circle cx="12" cy="12" r="4"/></svg>
           <div>
@@ -271,7 +280,11 @@
             <div class="wx-meta"><b id="wxCond">Loading…</b><br>Burlingame, CA</div>
           </div>
         </div>
-        <div class="status-pill" id="status"><span class="dot"></span><span id="statusText">—</span></div>
+        <div class="clock">
+          <div class="time" id="time">--:--</div>
+          <div class="cdate"><b id="greeting">Welcome</b> · <span id="date">—</span></div>
+        </div>
+        <div class="status-pill" id="status"><span class="pill-inner"><span class="dot"></span><span id="statusText">—</span></span></div>
       </div>
     </div>
 
@@ -464,7 +477,7 @@ async function loadBoardImage(isRefresh){
   }catch(e){
     // On silent refresh, keep showing the current image rather than an error
     if(!isRefresh){ boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload."); }
-    console.log("PORTRAIT CSS:", !!document.querySelector('style') && document.documentElement.outerHTML.includes('max-aspect-ratio'));
+    console.error("Dropbox board error:", e);
   }
 }
 
