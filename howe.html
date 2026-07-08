@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Burlingame Medical Center — Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- ============================================================= -->
+<!--  2033 HOWE AVE DIGITAL DIRECTORY  (landscape)          -->
+<!--  Managed by Chavez Management Group, Inc.                       -->
+<!--                                                                 -->
+<!--  THE DIRECTORY IS A DROPBOX IMAGE:                              -->
+<!--    Drop a new JPEG (1000x2000) into the Dropbox folder. The     -->
+<!--    board pulls the NEWEST image automatically on each reload    -->
+<!--    (it reloads itself every 30 min, or refresh the screen).     -->
+<!--    Set your Dropbox keys in the DROPBOX block in the script.    -->
+<!--                                                                 -->
+<!--  EDIT HEADER/FOOTER TEXT:                                       -->
+<!--    Move the mouse, click the gear (bottom-right), edit, Save.   -->
+<!--    For all screens: Copy code -> paste PUBLISHED_BUILDING block.-->
+<!-- ============================================================= -->
+
+<style>
+  :root{
+    --bg0:#0B1626; --bg1:#15273F; --bg2:#0A1320;
+    --surface:rgba(255,255,255,.045);
+    --surface-2:rgba(255,255,255,.075);
+    --border:rgba(255,255,255,.10);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#EBF1F8;
+    --muted:#93A6BC;
+    --faint:#6E809A;
+    --gold:#C9A24C;
+    --slate:#7FA0C2;
+    --sage:#92B4A0;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+
+  body{
+    background:
+      radial-gradient(120% 65% at 50% -8%, rgba(201,162,76,.16), transparent 60%),
+      linear-gradient(168deg, var(--bg1) 0%, var(--bg0) 46%, var(--bg2) 100%);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:"Inter", system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    user-select:none;
+    cursor:none;
+  }
+  body.show-cursor{ cursor:default; }
+
+  .stage{
+    height:100vh; width:100vw;
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    gap:clamp(14px,1.6vh,30px);
+    padding:clamp(26px,3.4vh,60px) clamp(26px,4vw,64px) clamp(20px,2.4vh,40px);
+  }
+
+  /* ---------- HEADER ---------- */
+  header{ text-align:center; }
+  .eyebrow{
+    font-family:"Jost",sans-serif; font-weight:400;
+    letter-spacing:.6em; text-indent:.6em; text-transform:uppercase;
+    font-size:clamp(12px,1.7vw,22px); color:var(--gold);
+  }
+  .title{
+    font-family:"Jost",sans-serif; font-weight:300;
+    text-transform:uppercase; line-height:.95; margin:.2em 0 0; color:#fff;
+  }
+  .title .l1{ display:block; font-size:clamp(40px,8.4vw,104px); letter-spacing:.16em; text-indent:.16em; }
+  .title .l2{ display:block; font-size:clamp(20px,4.3vw,54px); letter-spacing:.34em; text-indent:.34em; margin-top:.1em; color:#D9E2EC; }
+  .rule{
+    width:clamp(150px,30vw,360px); height:1.5px; margin:clamp(12px,1.6vh,22px) auto clamp(9px,1.1vh,15px);
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .address{
+    font-family:"Jost",sans-serif; font-weight:400;
+    color:var(--muted); font-size:clamp(15px,2.1vw,28px); letter-spacing:.05em;
+  }
+
+  /* ---------- LIVE CARD ---------- */
+  .live{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:clamp(16px,2vh,30px) clamp(20px,3vw,44px);
+    backdrop-filter:blur(8px);
+    text-align:center;
+  }
+  /* one horizontal row: weather (left) · time (center) · status (right) */
+  .live-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:clamp(14px,2vw,30px);
+  }
+  .live-bar .weather{ flex:1; justify-content:flex-start; }
+  .live-bar .clock{ flex:0 0 auto; }
+  .live-bar .clock-right{ flex:1; text-align:right; }
+  .live-bar .status-pill{ flex:1 0 auto; justify-content:flex-end; background:transparent; border:none; padding:0; }
+  .live-bar .status-pill .pill-inner{
+    display:inline-flex; align-items:center; gap:.6em; white-space:nowrap;
+    background:rgba(255,255,255,.05); border:1px solid var(--border);
+    padding:.6em 1.15em; border-radius:999px;
+  }
+  .clock .time{
+    font-family:"Jost",sans-serif; font-weight:300;
+    font-size:clamp(40px,8vw,96px); line-height:1; color:#fff;
+    letter-spacing:.01em; font-variant-numeric:tabular-nums;
+    text-shadow:0 0 38px rgba(201,162,76,.22); white-space:nowrap;
+  }
+  .clock .time .ampm{ font-size:.3em; color:var(--gold); letter-spacing:.14em; margin-left:.3em; font-weight:400; }
+  .clock .cdate{ margin-top:.35em; font-size:clamp(13px,1.7vw,22px); color:var(--muted); letter-spacing:.03em; white-space:nowrap; }
+  .clock .cdate b{ color:var(--text); font-weight:600; }
+
+  .live-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:18px; margin-top:clamp(14px,1.8vh,24px);
+    padding-top:clamp(14px,1.8vh,22px);
+    border-top:1px solid var(--border);
+  }
+  .weather{ display:flex; align-items:center; gap:clamp(8px,1vw,16px); }
+  .weather svg{ width:clamp(30px,3.4vw,48px); height:clamp(30px,3.4vw,48px); flex:none; }
+  .wx-temp{ font-family:"Jost",sans-serif; font-weight:400; font-size:clamp(22px,2.8vw,38px); color:#fff; line-height:1; }
+  .wx-meta{ text-align:left; font-size:clamp(11px,1.3vw,16px); color:var(--muted); line-height:1.25; }
+  .wx-meta b{ color:var(--text); font-weight:600; }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:.6em; white-space:nowrap;
+    font-size:clamp(11px,1.3vw,16px); font-weight:600; letter-spacing:.02em;
+    color:var(--muted); background:rgba(255,255,255,.05);
+    border:1px solid var(--border); padding:.6em 1.15em; border-radius:999px;
+  }
+  .dot{ width:.66em; height:.66em; border-radius:50%; background:#7d8aa0; }
+  .status-pill.open{ color:#bfe6cf; } .status-pill.open .dot{ background:#54c98a; box-shadow:0 0 0 4px rgba(84,201,138,.18); }
+  .status-pill.closed .dot{ background:#d08a73; }
+
+  /* ---------- DIRECTORY IMAGE — contained box in the middle ---------- */
+  .dir-area{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .board{
+    position:relative;
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .board{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 12px 50px rgba(0,0,0,.35);
+    backdrop-filter:blur(6px);
+  }
+  .board img{
+    width:100%; height:100%;
+    object-fit:contain;
+    border-radius:14px;
+    padding:10px;
+    opacity:0; transition:opacity .5s ease;
+  }
+  .board img.loaded{ opacity:1; }
+  .board-msg{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-family:"Jost",sans-serif; letter-spacing:.05em;
+    color:var(--muted); font-size:clamp(15px,1.8vw,22px); text-align:center;
+    padding:0 20px;
+  }
+  .board-msg.hide{ display:none; }
+  .stage{ position:relative; z-index:1; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    padding-top:clamp(12px,1.6vh,20px);
+    border-top:1px solid var(--border);
+  }
+  .foot-tag{ font-family:"Jost",sans-serif; letter-spacing:.06em; font-size:clamp(12px,1.5vw,19px); color:var(--muted); }
+  .foot-tag b{ color:var(--text); font-weight:500; }
+  .foot-managed{ display:flex; align-items:center; gap:.7em; font-size:clamp(11px,1.25vw,15px); color:var(--faint); letter-spacing:.04em; }
+  .monogram{
+    width:1.9em; height:1.9em; border-radius:50%; flex:none;
+    border:1.5px solid var(--gold); color:var(--gold);
+    display:grid; place-items:center; font-family:"Jost",sans-serif; font-weight:500; font-size:1em;
+  }
+
+  /* ---------- GEAR + EDITOR ---------- */
+  #gear{
+    position:fixed; right:18px; bottom:16px; z-index:40;
+    width:46px; height:46px; border-radius:50%;
+    background:rgba(255,255,255,.1); color:#fff; border:1px solid var(--border-strong);
+    display:grid; place-items:center; cursor:pointer; backdrop-filter:blur(6px);
+    opacity:0; transition:opacity .25s; pointer-events:none;
+  }
+  body.show-cursor #gear{ opacity:.9; pointer-events:auto; }
+  #gear:hover{ opacity:1; }
+  #gear svg{ width:23px; height:23px; }
+
+  .editor-overlay{ position:fixed; inset:0; z-index:50; background:rgba(6,12,22,.6); display:none; justify-content:flex-end; cursor:default; }
+  .editor-overlay.show{ display:flex; }
+  .editor{ width:min(560px,100%); height:100%; background:#fff; color:#18222F; box-shadow:-12px 0 40px rgba(0,0,0,.4); display:flex; flex-direction:column; font-family:"Inter",sans-serif; }
+  .editor h2{ font-family:"Jost",sans-serif; font-weight:500; letter-spacing:.04em; margin:0; font-size:20px; color:#16263F; }
+  .editor-top{ padding:18px 22px; border-bottom:1px solid #ECE7DC; display:flex; align-items:center; justify-content:space-between; }
+  .editor-top .x{ border:none; background:#F2EFE8; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:18px; color:#18222F; }
+  .editor-hint{ padding:12px 22px; background:#F7F4ED; color:#66717E; font-size:12.5px; line-height:1.5; border-bottom:1px solid #ECE7DC; }
+  .editor-hint b{ color:#18222F; } .editor-hint code{ background:#ECE7DC; padding:1px 5px; border-radius:4px; font-size:11.5px; }
+  .editor-body{ flex:1; overflow-y:auto; padding:14px 22px 22px; cursor:auto; }
+  .ed-section{ border:1px solid #E5E0D4; border-radius:10px; margin-bottom:16px; overflow:hidden; }
+  .ed-section-head{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:#FAF8F2; border-bottom:1px solid #ECE7DC; }
+  .ed-section-head input.sec-name{ flex:1; font-weight:600; }
+  .tone-swatch{ width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; }
+  .tone-swatch.sel{ outline:2px solid #18222F; outline-offset:1px; }
+  .tone-navy{ background:#C9A24C; } .tone-slate{ background:#7FA0C2; } .tone-sage{ background:#92B4A0; }
+  .ed-entries{ padding:8px 10px; }
+  .ed-entry{ display:flex; gap:8px; margin-bottom:8px; align-items:flex-start; }
+  .ed-entry input.suite{ width:66px; flex:none; text-align:center; }
+  .ed-entry textarea.name{ flex:1; resize:vertical; min-height:38px; font-family:inherit; }
+  .ed-entry .del, .ed-section-head .del{ border:none; background:#F4E7E2; color:#b4543c; width:34px; height:38px; border-radius:7px; cursor:pointer; flex:none; font-size:16px; }
+  .editor input, .editor textarea{ border:1px solid #D9D3C6; border-radius:7px; padding:8px 10px; font-size:13.5px; color:#18222F; background:#fff; }
+  .editor input:focus, .editor textarea:focus{ outline:2px solid #7FA0C2; border-color:#7FA0C2; }
+  .ed-field{ display:block; margin-bottom:14px; }
+  .ed-field span{ display:block; font-size:12.5px; font-weight:600; color:#3a4655; margin-bottom:5px; }
+  .ed-field input{ width:100%; }
+  .add-entry, .add-section{ border:1px dashed #C7BFAE; background:#fff; color:#5C7286; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px; font-weight:600; }
+  .add-section{ width:100%; margin-top:4px; }
+  .editor-actions{ border-top:1px solid #ECE7DC; padding:14px 22px; display:flex; flex-wrap:wrap; gap:10px; }
+  .btn{ border:none; border-radius:8px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-primary{ background:#16263F; color:#fff; } .btn-ghost{ background:#F2EFE8; color:#18222F; } .btn-ghost.danger{ color:#b4543c; }
+  .toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#16263F; color:#fff; padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600; z-index:60; opacity:0; transition:opacity .25s; pointer-events:none; border:1px solid var(--border-strong); }
+  .toast.show{ opacity:1; }
+
+  /* landscape / wide screens: use more columns so it still fills nicely */
+  .mode-landscape .directory{ grid-template-columns:repeat(3,1fr); }
+
+  /* ===========================================================
+     PORTRAIT LAYOUT — applied when CONFIG.orientation = "portrait"
+     (class .mode-portrait on <html>). Tall: header + clock on top,
+     big tall image below. Sizes use vh so they scale with height.
+     =========================================================== */
+  .mode-portrait .stage{
+    grid-template-rows:auto 1fr auto;
+    gap:1.4vh;
+    padding:2vh 4vw 1.8vh;
+  }
+  .mode-portrait .eyebrow{ font-size:1.4vh; letter-spacing:.5em; }
+  .mode-portrait .title .l1{ font-size:5vh; }
+  .mode-portrait .title .l2{ font-size:2.4vh; }
+  .mode-portrait .rule{ width:28vw; margin:1vh auto .7vh; }
+  .mode-portrait .address{ font-size:1.9vh; }
+
+  .mode-portrait .live{ padding:1.6vh 4vw; border-radius:1.6vh; }
+  .mode-portrait .live-bar{ gap:2vw; }
+  .mode-portrait .clock .time{ font-size:4.4vh; }
+  .mode-portrait .clock .time .ampm{ font-size:.3em; }
+  .mode-portrait .clock .cdate{ font-size:1.4vh; margin-top:.25em; }
+  .mode-portrait .weather svg{ width:3vh; height:3vh; }
+  .mode-portrait .wx-temp{ font-size:2.4vh; }
+  .mode-portrait .wx-meta{ font-size:1.2vh; }
+  .mode-portrait .status-pill{ font-size:1.2vh; padding:.55em 1em; }
+
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <header>
+      <div class="eyebrow" id="welcome">Welcome to</div>
+      <h1 class="title"><span class="l1" id="name1">2033 Howe Ave.</span><span class="l2" id="name2">Sacramento</span></h1>
+      <div class="rule"></div>
+      <div class="address" id="address">Building Directory</div>
+    </header>
+
+    <!-- directory image sits in its own contained area here -->
+    <main class="dir-area">
+      <div class="board" id="board">
+        <img id="boardImg" alt="Directory" />
+        <div class="board-msg" id="boardMsg">Loading directory…</div>
+      </div>
+    </main>
+
+    <!-- bottom bar: weather left · time right -->
+    <div class="live">
+      <div class="live-bar">
+        <div class="weather" id="weather">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#9DB0C4" stroke-width="1.6"><circle cx="12" cy="12" r="4"/></svg>
+          <div>
+            <div class="wx-temp" id="wxTemp">—°</div>
+            <div class="wx-meta"><b id="wxCond">Loading…</b><br><span id="wxLabel">Sacramento, CA</span></div>
+          </div>
+        </div>
+        <div class="clock clock-right">
+          <div class="time" id="time">--:--</div>
+          <div class="cdate"><b id="greeting">Welcome</b> · <span id="date">—</span></div>
+        </div>
+        <div class="status-pill" id="status" style="display:none"><span class="pill-inner"><span class="dot"></span><span id="statusText">—</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="gear" title="Edit directory" aria-label="Edit directory">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+
+  <div class="editor-overlay" id="editorOverlay">
+    <div class="editor">
+      <div class="editor-top"><h2>Edit board</h2><button class="x" id="editorClose" aria-label="Close">✕</button></div>
+      <div class="editor-hint"><b>Save to this screen</b> updates this device only. To change <b>every</b> screen, click <b>Copy code</b> and paste it into your GitHub <code>index.html</code> (replace the <code>PUBLISHED_BUILDING</code> block), then commit. The directory image itself is managed in Dropbox — just drop a new JPEG in the folder and reload.</div>
+      <div class="editor-body" id="editorBody"></div>
+      <div class="editor-actions">
+        <button class="btn btn-primary" id="saveLocal">Save to this screen</button>
+        <button class="btn btn-ghost" id="copyCode">Copy code</button>
+        <button class="btn btn-ghost danger" id="resetLocal">Reset to published</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   ██  SIGNAGE CONFIG  ██  — THE ONLY SECTION YOU EDIT PER BUILDING/MONITOR
+   ----------------------------------------------------------------------------
+   To make a new building's page:
+     1. Copy this whole file, rename it (e.g. freeway.html)
+     2. Change ONLY the values in CONFIG below
+     3. Commit to GitHub — done.
+   Everything below CONFIG is shared logic; you don't need to touch it.
+   ============================================================================ */
+const CONFIG = {
+
+  // ---- ORIENTATION: "portrait" (tall TV) or "landscape" (wide TV) ----
+  orientation: "landscape",
+
+  // ---- WHICH DROPBOX FOLDER holds this monitor's directory image ----
+  folderPath: "/Chavez Management Team Folder/CM- Signage/2033 Howe Ave.",
+
+  // ---- HEADER TEXT shown on this monitor ----
+  welcome:  "Welcome to",
+  name1:    "2033 Howe Ave.",
+  name2:    "Sacramento",
+  address:  "Building Directory",
+
+  // ---- FOOTER TEXT (not shown on this layout) ----
+  footerTag:     "",
+  footerManaged: "",
+
+  // ---- OFFICE HOURS (status pill hidden on this layout) ----
+  openHour: 9, closeHour: 17, openDays: [1,2,3,4,5],
+
+  // ---- WEATHER LOCATION (lat/lon + label) ----
+  weatherLat: 38.5816, weatherLon: -121.4944, weatherLabel: "Sacramento, CA",
+
+  // ---- A short unique id for this monitor ----
+  screenId: "2033-howe-ave"
+};
+
+/* ============================================================================
+   SHARED DROPBOX APP CREDENTIALS  — same for ALL monitors, set once.
+   Paste your 3 values between the quotes. (Team namespace auto-detected.)
+   ============================================================================ */
+const DROPBOX = {
+  APP_KEY:       "PASTE_APP_KEY_HERE",
+  APP_SECRET:    "PASTE_APP_SECRET_HERE",
+  REFRESH_TOKEN: "PASTE_REFRESH_TOKEN_HERE",
+  FOLDER_PATH:   CONFIG.folderPath,     // taken from CONFIG above
+  ROOT_NS_ID:    "14182341027"          // team root namespace (auto-detected too)
+};
+
+/* ---- CONFIG mapped into the internal shapes the rest of the code uses ---- */
+const PUBLISHED_BUILDING = {
+  welcome: CONFIG.welcome, name1: CONFIG.name1, name2: CONFIG.name2, address: CONFIG.address
+};
+const OFFICE = { openHour: CONFIG.openHour, closeHour: CONFIG.closeHour, days: CONFIG.openDays };
+const STORAGE_KEY = "signage_override_" + CONFIG.screenId;
+
+function loadOverride(){ try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function saveOverride(d){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); return true; }catch(e){ return false; } }
+function clearOverride(){ try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} }
+function currentData(){ const o=loadOverride(); return (o&&o.name1!==undefined)?o:PUBLISHED_BUILDING; }
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+function render(){
+  const b = currentData();
+  document.getElementById("welcome").textContent = b.welcome || "Welcome to";
+  document.getElementById("name1").textContent   = b.name1 || "";
+  document.getElementById("name2").textContent   = b.name2 || "";
+  document.getElementById("address").textContent = b.address || "";
+  document.title = [b.name1,b.name2].filter(Boolean).join(" ") + " — Directory";
+  // CONFIG-driven bits (not part of the per-screen editable override)
+  const wxl = document.getElementById("wxLabel"); if(wxl) wxl.textContent = CONFIG.weatherLabel;
+  const ft = document.getElementById("footTag"); if(ft) ft.innerHTML = CONFIG.footerTag.replace(/^(\S+\s\S+)/, "<b>$1</b>");
+  const fm = document.getElementById("footManaged"); if(fm) fm.textContent = CONFIG.footerManaged;
+}
+
+/* Apply the orientation from CONFIG as a class on <html>, so the CSS can
+   lay out portrait vs landscape. Runs immediately. */
+(function applyOrientation(){
+  const o = (CONFIG.orientation === "landscape") ? "mode-landscape" : "mode-portrait";
+  document.documentElement.classList.add(o);
+})();
+
+/* =================================================================
+   DROPBOX IMAGE LOADER
+   1. Use the refresh token to get a short-lived access token.
+   2. List the folder, pick the newest image file.
+   3. Download it and show it in the board.
+   Runs once on page load. (Board reloads itself every 30 min below.)
+   ================================================================= */
+function boardMsg(text){ const m=document.getElementById("boardMsg"); m.textContent=text; m.classList.remove("hide"); }
+function boardHideMsg(){ document.getElementById("boardMsg").classList.add("hide"); }
+
+async function dbxAccessToken(){
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: DROPBOX.REFRESH_TOKEN,
+    client_id: DROPBOX.APP_KEY,
+    client_secret: DROPBOX.APP_SECRET
+  });
+  const r = await fetch("https://api.dropbox.com/oauth2/token", { method:"POST", body });
+  if(!r.ok) throw new Error("token "+r.status);
+  const d = await r.json();
+  return d.access_token;
+}
+
+/* On a Business/Team account the files live in the team's root namespace.
+   Ask Dropbox for this account's root namespace; fall back to the configured
+   ID. We send this as a Dropbox-API-Path-Root header on file calls so paths
+   like /Chavez Management Team Folder/... resolve in the team space. */
+let _rootNs = null;
+async function dbxRootNamespace(accessToken){
+  if(_rootNs) return _rootNs;
+  try{
+    const r = await fetch("https://api.dropboxapi.com/2/users/get_current_account", {
+      method:"POST", headers:{ "Authorization":"Bearer "+accessToken }
+    });
+    if(r.ok){
+      const j = await r.json();
+      if(j.root_info && j.root_info.root_namespace_id){ _rootNs = String(j.root_info.root_namespace_id); }
+    }
+  }catch(e){ /* fall through to configured id */ }
+  if(!_rootNs && DROPBOX.ROOT_NS_ID){ _rootNs = String(DROPBOX.ROOT_NS_ID); }
+  return _rootNs;
+}
+function pathRootHeader(ns){
+  return ns ? { "Dropbox-API-Path-Root": JSON.stringify({ ".tag":"root", "root": ns }) } : {};
+}
+
+async function dbxNewestImage(accessToken, ns){
+  // List folder contents (in the team root namespace)
+  const r = await fetch("https://api.dropboxapi.com/2/files/list_folder", {
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+accessToken, "Content-Type":"application/json", ...pathRootHeader(ns) },
+    body: JSON.stringify({ path: DROPBOX.FOLDER_PATH, recursive:false, limit:200 })
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error("list "+r.status+" "+t); }
+  const d = await r.json();
+  const imgs = (d.entries||[]).filter(e =>
+    e[".tag"]==="file" && /\.(jpe?g|png|webp)$/i.test(e.name)
+  );
+  if(!imgs.length) return null;
+  // Newest by server_modified
+  imgs.sort((a,b)=> new Date(b.server_modified) - new Date(a.server_modified));
+  return imgs[0];
+}
+
+async function dbxDownload(accessToken, pathLower, ns){
+  const r = await fetch("https://content.dropboxapi.com/2/files/download", {
+    method:"POST",
+    headers:{
+      "Authorization":"Bearer "+accessToken,
+      ...pathRootHeader(ns),
+      "Dropbox-API-Arg": JSON.stringify({ path: pathLower })
+    }
+  });
+  if(!r.ok) throw new Error("download "+r.status);
+  return await r.blob();
+}
+
+let _currentRev = null;   // rev/id of the image currently shown
+async function loadBoardImage(isRefresh){
+  const imgEl = document.getElementById("boardImg");
+  try{
+    if(DROPBOX.APP_KEY.startsWith("PASTE_")){ boardMsg("Add your Dropbox keys in the code to show the directory."); return; }
+    if(!isRefresh){ boardMsg("Loading directory…"); }
+    const token = await dbxAccessToken();
+    const ns = await dbxRootNamespace(token);
+    const newest = await dbxNewestImage(token, ns);
+    if(!newest){
+      // Only show the empty message on first load, not on silent refreshes
+      if(!isRefresh){ boardMsg("No image found in the Dropbox folder yet. Drop a JPEG in and reload."); }
+      return;
+    }
+    // If the newest file hasn't changed, do nothing (no flicker, no re-download)
+    const rev = newest.rev || newest.content_hash || newest.id;
+    if(isRefresh && rev === _currentRev) return;
+    const blob = await dbxDownload(token, newest.path_lower, ns);
+    const url = URL.createObjectURL(blob);
+    if(isRefresh && imgEl.classList.contains("loaded")){
+      // gentle cross-fade: dim, swap, fade back in
+      imgEl.classList.remove("loaded");
+      setTimeout(()=>{
+        imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); _currentRev = rev; URL.revokeObjectURL(url); };
+        imgEl.src = url;
+      }, 260);
+    }else{
+      imgEl.onload = ()=>{ imgEl.classList.add("loaded"); boardHideMsg(); _currentRev = rev; URL.revokeObjectURL(url); };
+      imgEl.onerror = ()=>{ if(!isRefresh) boardMsg("Image could not be displayed."); };
+      imgEl.src = url;
+    }
+  }catch(e){
+    // On silent refresh, keep showing the current image rather than an error
+    if(!isRefresh){ boardMsg("Couldn't reach Dropbox. Check the keys / folder path, then reload."); }
+    console.error("Dropbox board error:", e);
+  }
+}
+
+/* ---------- clock + greeting + status ---------- */
+const TZ = "America/Los_Angeles";
+function tick(){
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, hour:"numeric", minute:"2-digit", hour12:true }).formatToParts(now);
+  let hh="",mm="",ap=""; parts.forEach(p=>{ if(p.type==="hour")hh=p.value; if(p.type==="minute")mm=p.value; if(p.type==="dayPeriod")ap=p.value; });
+  document.getElementById("time").innerHTML = `${hh}:${mm}<span class="ampm">${ap}</span>`;
+  document.getElementById("date").textContent = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, weekday:"long", month:"long", day:"numeric" }).format(now);
+  const hr = parseInt(new Intl.DateTimeFormat("en-US",{ timeZone:TZ, hour:"numeric", hour12:false }).format(now),10) % 24;
+  document.getElementById("greeting").textContent = hr<12 ? "Good morning" : hr<17 ? "Good afternoon" : "Good evening";
+  const wd = new Intl.DateTimeFormat("en-US",{ timeZone:TZ, weekday:"short" }).format(now);
+  const dayIdx = ({Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6})[wd];
+  const isOpen = OFFICE.days.includes(dayIdx) && hr>=OFFICE.openHour && hr<OFFICE.closeHour;
+  const pill = document.getElementById("status");
+  pill.classList.toggle("open", isOpen); pill.classList.toggle("closed", !isOpen);
+  document.getElementById("statusText").textContent = isOpen ? "Open · Until 5:00 PM" : "Closed · Mon–Fri 9–5";
+}
+
+/* ---------- weather (Open-Meteo, no key) ---------- */
+const WX_LAT=CONFIG.weatherLat, WX_LON=CONFIG.weatherLon;
+function wxIcon(code,isDay){
+  const S="#9DB0C4";
+  if(code===0) return isDay
+    ? `<circle cx="12" cy="12" r="4.5" fill="#E0B454" stroke="none"/><g stroke="#E0B454" stroke-width="1.7" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.1" y2="19.1"/><line x1="19.1" y1="4.9" x2="17.3" y2="6.7"/><line x1="6.7" y1="17.3" x2="4.9" y2="19.1"/></g>`
+    : `<path d="M17 14a5 5 0 1 1-5-9 6 6 0 1 0 5 9z" fill="#C9D4E2" stroke="none"/>`;
+  if(code===1||code===2) return `<circle cx="9" cy="9" r="3.5" fill="#E0B454" stroke="none"/><path d="M8 18h9a3.5 3.5 0 0 0 .2-7 5 5 0 0 0-9.4-.6A3.5 3.5 0 0 0 8 18z" fill="rgba(255,255,255,.92)" stroke="${S}" stroke-width="1.4"/>`;
+  if(code===3||code===45||code===48) return `<path d="M7 18h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 18z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/>`;
+  if((code>=51&&code<=67)||(code>=80&&code<=82)) return `<path d="M7 15h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 15z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><g stroke="#7FA0C2" stroke-width="1.8" stroke-linecap="round"><line x1="9" y1="18" x2="8" y2="21"/><line x1="13" y1="18" x2="12" y2="21"/><line x1="17" y1="18" x2="16" y2="21"/></g>`;
+  if((code>=71&&code<=77)||code===85||code===86) return `<path d="M7 14h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 14z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><g fill="#CBD8E6"><circle cx="9" cy="19" r="1"/><circle cx="13" cy="20.5" r="1"/><circle cx="16" cy="18.5" r="1"/></g>`;
+  if(code>=95) return `<path d="M7 13h10a3.6 3.6 0 0 0 .2-7.2 5.2 5.2 0 0 0-10.1.5A3.5 3.5 0 0 0 7 13z" fill="rgba(255,255,255,.9)" stroke="${S}" stroke-width="1.4"/><path d="M12 14l-2.5 4H12l-1 3 3.5-4.5H12l1.5-2.5z" fill="#E0B454" stroke="none"/>`;
+  return `<circle cx="12" cy="12" r="4" stroke="${S}" stroke-width="1.6" fill="none"/>`;
+}
+function wxText(code){ const m={0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Light drizzle",53:"Drizzle",55:"Drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",77:"Snow",80:"Rain showers",81:"Rain showers",82:"Heavy showers",85:"Snow showers",86:"Snow showers",95:"Thunderstorm",96:"Thunderstorm",99:"Thunderstorm"}; return m[code]||"—"; }
+async function loadWeather(){
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles`;
+    const r=await fetch(url,{cache:"no-store"}); const d=await r.json(); const c=d.current;
+    document.getElementById("wxTemp").textContent=Math.round(c.temperature_2m)+"°";
+    document.getElementById("wxCond").textContent=wxText(c.weather_code);
+    document.querySelector(".weather svg").innerHTML=wxIcon(c.weather_code, c.is_day===1);
+  }catch(e){ document.getElementById("wxCond").textContent="Weather unavailable"; }
+}
+
+/* ============================ EDITOR (building info) ============================ */
+let draft=null;
+const overlay=document.getElementById("editorOverlay");
+const edBody=document.getElementById("editorBody");
+function openEditor(){ draft=deepClone(currentData()); renderEditor(); overlay.classList.add("show"); }
+function closeEditor(){ overlay.classList.remove("show"); }
+function field(label,key){
+  return `<label class="ed-field"><span>${label}</span><input data-k="${key}" value="${escapeHtml(draft[key]||'')}" /></label>`;
+}
+function renderEditor(){
+  edBody.innerHTML =
+    field("Eyebrow (small top line)","welcome") +
+    field("Name — line 1","name1") +
+    field("Name — line 2","name2") +
+    field("Address","address");
+}
+edBody.addEventListener("input", e=>{
+  const k=e.target.dataset.k; if(k){ draft[k]=e.target.value; }
+});
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2200); }
+document.getElementById("saveLocal").addEventListener("click", ()=>{ if(saveOverride(draft)){ render(); toast("Saved to this screen"); closeEditor(); } else toast("Couldn't save on this device"); });
+document.getElementById("resetLocal").addEventListener("click", ()=>{ clearOverride(); draft=deepClone(PUBLISHED_BUILDING); renderEditor(); render(); toast("Reset to the published version"); });
+document.getElementById("copyCode").addEventListener("click", async ()=>{
+  const code="const PUBLISHED_BUILDING = "+JSON.stringify(draft,null,2)+";";
+  try{ await navigator.clipboard.writeText(code); toast("Code copied — paste into GitHub"); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=code; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); toast("Code copied"); }catch(_){ toast("Copy failed — select manually"); } document.body.removeChild(ta); }
+});
+document.getElementById("gear").addEventListener("click", openEditor);
+document.getElementById("editorClose").addEventListener("click", closeEditor);
+overlay.addEventListener("click", e=>{ if(e.target===overlay) closeEditor(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeEditor(); });
+
+/* ---------- signage idle cursor ---------- */
+let idleTimer;
+function wake(){ document.body.classList.add("show-cursor"); clearTimeout(idleTimer); idleTimer=setTimeout(()=>{ if(!overlay.classList.contains("show")) document.body.classList.remove("show-cursor"); },4000); }
+["mousemove","touchstart","keydown"].forEach(ev=>document.addEventListener(ev,wake));
+
+/* ---------- boot ---------- */
+render();
+loadBoardImage();
+tick(); setInterval(tick,1000);
+loadWeather(); setInterval(loadWeather,10*60*1000);
+
+/* Silently check the Dropbox folder every 2 minutes. The image only swaps
+   if a newer file appears — otherwise nothing happens (no flicker). The
+   clock and weather keep running; the page never does a full reload here. */
+setInterval(()=>{ loadBoardImage(true); }, 2*60*1000);
+
+/* Once a day, do a full reload in the small hours so any code/font updates
+   are picked up. Skipped if the editor is open. */
+setInterval(()=>{ if(!overlay.classList.contains("show")) location.reload(); }, 24*60*60*1000);
+</script>
+</body>
+</html>
